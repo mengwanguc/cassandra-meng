@@ -1,8 +1,8 @@
 export SOURCE_ROOT=/home/sda_mount
 
 sudo apt-get update
-sudo apt-get install git tar g++ make automake autoconf libtool  wget patch libx11-dev libxt-dev pkg-config texinfo locales-all unzip python
-sudo apt-get install openjdk-8-jre openjdk-8-jdk
+sudo apt-get install -y git tar g++ make automake autoconf libtool  wget patch libx11-dev libxt-dev pkg-config texinfo locales-all unzip python
+sudo apt-get install -y openjdk-8-jre openjdk-8-jdk
 
 cd $SOURCE_ROOT/
 wget http://archive.apache.org/dist/ant/binaries/apache-ant-1.10.4-bin.tar.gz

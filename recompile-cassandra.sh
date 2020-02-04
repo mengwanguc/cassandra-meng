@@ -25,10 +25,7 @@ wget -O lib/snappy-java-1.1.2.6.jar https://repo1.maven.org/maven2/org/xerial/sn
 
 
 cd $SOURCE_ROOT/
-git clone https://github.com/java-native-access/jna.git
 cd jna
-git checkout 4.2.2
-ant
 rm $SOURCE_ROOT/cassandra-meng/lib/jna-4.2.2.jar
 cp build/jna.jar $SOURCE_ROOT/cassandra-meng/lib/jna-4.2.2.jar
 

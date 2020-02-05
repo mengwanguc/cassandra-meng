@@ -154,7 +154,7 @@ public abstract class AbstractReadExecutor
         List<InetAddress> allReplicas = StorageProxy.getLiveSortedEndpoints(keyspace, command.partitionKey());
         
         for (InetAddress replica : allReplicas) {
-        	System.out.println(replica.getAddress());
+        	System.out.println(replica.getAddress().getHostAddress());
         }
         System.out.println("done   ");
         

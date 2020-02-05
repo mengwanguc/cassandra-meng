@@ -19,13 +19,9 @@ sed -i "s/\<http\>/https/g" build.properties.default
 sed -i "89s/\<http:\/\/repo2\>/https:\/\/repo1/" build.xml
 
 
-cd $SOURCE_ROOT/cassandra-meng
-rm lib/snappy-java-1.1.1.7.jar
-wget -O lib/snappy-java-1.1.2.6.jar https://repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.2.6/snappy-java-1.1.2.6.jar
-
-
 cd $SOURCE_ROOT/
 cd jna
+ant
 rm $SOURCE_ROOT/cassandra-meng/lib/jna-4.2.2.jar
 cp build/jna.jar $SOURCE_ROOT/cassandra-meng/lib/jna-4.2.2.jar
 

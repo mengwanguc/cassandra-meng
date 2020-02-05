@@ -65,6 +65,10 @@ public class OutboundTcpConnectionPool
 
         this.backPressureState = backPressureState;
     }
+    
+    public InetAddress getID() {
+    	return id;
+    }
 
     /**
      * returns the appropriate connection based on message type.

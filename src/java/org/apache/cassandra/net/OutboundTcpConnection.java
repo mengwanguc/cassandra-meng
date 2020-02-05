@@ -180,7 +180,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         expireMessages(nanoTime);
         try
         {
-        	System.out.println("backlog.enqueue...");
+        	if (poolReference.getID().getHostAddress() == "155.98.36.78") {
+        		System.out.println("backlog.enqueue...");
+        	}
             backlog.put(new QueuedMessage(message, id, nanoTime));
         }
         catch (InterruptedException e)
@@ -228,7 +230,10 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         // keeping list (batch) size small for now; that way we don't have an unbounded array (that we never resize)
         final List<QueuedMessage> drainedMessages = new ArrayList<>(drainedMessageSize);
 
-        System.out.println("outboundTcpConnection.run....()");
+        
+    	if (poolReference.getID().getHostAddress() == "155.98.36.78") {
+    		System.out.println("outboundTcpConnection.run....()");
+    	}
         
         outer:
         while (!isStopped)
@@ -314,7 +319,10 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     private void writeConnected(QueuedMessage qm, boolean flush)
     {
-        System.out.println("outboundTcpConnection.writeConnected....()");
+    	if (poolReference.getID().getHostAddress() == "155.98.36.78") {
+            System.out.println("outboundTcpConnection.writeConnected....()");
+    	}
+        
         try
         {
             byte[] sessionBytes = qm.message.parameters.get(Tracing.TRACE_HEADER);

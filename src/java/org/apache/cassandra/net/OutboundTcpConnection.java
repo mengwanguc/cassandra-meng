@@ -180,6 +180,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         expireMessages(nanoTime);
         try
         {
+        	System.out.prinln("backlog.enqueue...");
             backlog.put(new QueuedMessage(message, id, nanoTime));
         }
         catch (InterruptedException e)

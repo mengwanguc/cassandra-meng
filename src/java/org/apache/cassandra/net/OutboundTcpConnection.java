@@ -227,6 +227,8 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         // keeping list (batch) size small for now; that way we don't have an unbounded array (that we never resize)
         final List<QueuedMessage> drainedMessages = new ArrayList<>(drainedMessageSize);
 
+        System.out.println("outboundTcpConnection.run....()");
+        
         outer:
         while (!isStopped)
         {

@@ -319,7 +319,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     private void writeConnected(QueuedMessage qm, boolean flush)
     {
-    	if (poolReference.getID().getHostAddress() == "155.98.36.78") {
+    	if (poolReference.getID().getHostAddress().equals("155.98.36.78")) {
             System.out.println("outboundTcpConnection.writeConnected....()");
     	}
         

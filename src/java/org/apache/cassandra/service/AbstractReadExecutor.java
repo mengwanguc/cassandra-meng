@@ -152,6 +152,12 @@ public abstract class AbstractReadExecutor
     {
         Keyspace keyspace = Keyspace.open(command.metadata().ksName);
         List<InetAddress> allReplicas = StorageProxy.getLiveSortedEndpoints(keyspace, command.partitionKey());
+        
+        for (InetAddress replica : allReplicas) {
+        	System.out.println(replica.getAddress());
+        }
+        System.out.println("done   ");
+        
         // 11980: Excluding EACH_QUORUM reads from potential RR, so that we do not miscount DC responses
         ReadRepairDecision repairDecision = consistencyLevel == ConsistencyLevel.EACH_QUORUM
                                             ? ReadRepairDecision.NONE

@@ -314,6 +314,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     private void writeConnected(QueuedMessage qm, boolean flush)
     {
+        System.out.println("outboundTcpConnection.writeConnected....()");
         try
         {
             byte[] sessionBytes = qm.message.parameters.get(Tracing.TRACE_HEADER);

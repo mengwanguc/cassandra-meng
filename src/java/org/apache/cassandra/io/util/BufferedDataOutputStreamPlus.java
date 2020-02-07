@@ -319,6 +319,8 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
     {
         buffer.flip();
 
+        System.out.println("@@@meng: channel's class name: " + channel.getClass().getName());
+        
         while (buffer.hasRemaining())
             channel.write(buffer);
 

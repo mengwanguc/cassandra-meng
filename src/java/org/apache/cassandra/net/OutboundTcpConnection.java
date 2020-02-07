@@ -472,6 +472,8 @@ public class OutboundTcpConnection extends FastThreadLocalThread
                 out.writeInt(MessagingService.PROTOCOL_MAGIC);
                 writeHeader(out, targetVersion, shouldCompressConnection());
                 out.flush();
+                
+                System.out.println("@@@meng: out's class name:" + out.getClass().getName());
 
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 int maxTargetVersion = handshakeVersion(in);

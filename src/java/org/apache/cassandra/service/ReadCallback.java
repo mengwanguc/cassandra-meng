@@ -106,6 +106,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
         long time = unit.toNanos(timePastStart) - (System.nanoTime() - queryStartNanoTime);
         try
         {
+        	System.out.println("		@@meng: calling ReadCallback.await...\n");
             return condition.await(time, TimeUnit.NANOSECONDS);
         }
         catch (InterruptedException ex)

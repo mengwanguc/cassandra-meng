@@ -231,9 +231,10 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         final List<QueuedMessage> drainedMessages = new ArrayList<>(drainedMessageSize);
 
         
-    	if (poolReference.getID().getHostAddress() == "155.98.36.78") {
-    		System.out.println("outboundTcpConnection.run....()");
-    	}
+        System.out.println("	@meng: outboundTcpConnection.run....()");
+        System.out.println("	@meng: local: " + socket.getLocalSocketAddress().toString()
+        		+ "	remote: " + socket.getRemoteSocketAddress().toString());
+        
         
         outer:
         while (!isStopped)

@@ -84,6 +84,9 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
     @Override
     public void run()
     {
+    	System.out.println("	@meng: calling IncomingTcpConnection.run()....");
+    	Thread.dumpStack();
+    	System.out.println();
         try
         {
             if (version < MessagingService.VERSION_20)
@@ -138,9 +141,6 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
     private void receiveMessages() throws IOException
     {
         // handshake (true) endpoint versions
-    	System.out.println("	@meng: calling IncomingTcpConnection.receiveMessages....");
-    	Thread.dumpStack();
-    	System.out.println();
     	
         DataOutputStream out = new DataOutputStream(socket.getOutputStream());
         // if this version is < the MS version the other node is trying
@@ -190,6 +190,11 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
 
     private InetAddress receiveMessage(DataInputPlus input, int version) throws IOException
     {
+    	
+    	System.out.println("	@meng: calling IncomingTcpConnection.receiveMessage....");
+    	Thread.dumpStack();
+    	System.out.println();
+    	
         int id;
         if (version < MessagingService.VERSION_20)
             id = Integer.parseInt(input.readUTF());

@@ -138,6 +138,10 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
     private void receiveMessages() throws IOException
     {
         // handshake (true) endpoint versions
+    	System.out.println("	@meng: calling IncomingTcpConnection.receiveMessages....");
+    	Thread.dumpStack();
+    	System.out.println();
+    	
         DataOutputStream out = new DataOutputStream(socket.getOutputStream());
         // if this version is < the MS version the other node is trying
         // to connect with, the other node will disconnect

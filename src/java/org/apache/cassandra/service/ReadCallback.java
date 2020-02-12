@@ -157,7 +157,6 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
     public void response(MessageIn<ReadResponse> message)
     {
     	System.out.println("		@meng: calling ReadCallback.response......");
-    	Thread.dumpStack();
     	System.out.println();
         resolver.preprocess(message);
         int n = waitingFor(message.from)

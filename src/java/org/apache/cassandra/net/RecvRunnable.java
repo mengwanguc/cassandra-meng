@@ -17,10 +17,10 @@
  */
 package org.apache.cassandra.net;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 import org.apache.cassandra.db.ReadCommand;
 
@@ -44,7 +44,8 @@ public class RecvRunnable implements Runnable {
 	        	InputStream in = socket.getInputStream();
 	        	System.out.println("		@@@meng: inputstream's class name: " + in.getClass().getName());
 	        	System.out.println("		@meng: Starting to read...");
-	        	int c = in.read();
+	        	byte[] data = new byte[1024];
+	        	int c = in.read(data);
 	        	System.out.println("		@meng: finished read from socket...");
 	        } catch (Exception e) {
 	        	CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);

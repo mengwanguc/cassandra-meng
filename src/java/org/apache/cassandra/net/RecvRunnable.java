@@ -28,10 +28,12 @@ import org.apache.cassandra.db.ReadCommand;
 public class RecvRunnable implements Runnable {
 	public MessageOut<ReadCommand> message;
 	public InetAddress endpoint;
+	public int id;
 	
-	public RecvRunnable(MessageOut<ReadCommand> message, InetAddress endpoint) {
+	public RecvRunnable(MessageOut<ReadCommand> message, InetAddress endpoint, int id) {
 		this.message = message;
 		this.endpoint = endpoint;
+		this.id = id;
 	}
 	
 	public void run() {
@@ -43,8 +45,8 @@ public class RecvRunnable implements Runnable {
 	        	System.out.println("		@@@meng: inputstream's class name: " + in.getClass().getName());
 	        	System.out.println("		@meng: Starting to read...");
 	        	int c = in.read();
-	        	
 	        } catch (IOException e) {
+	        	
 	        	System.out.println(e.getStackTrace());
 	        }
 	        

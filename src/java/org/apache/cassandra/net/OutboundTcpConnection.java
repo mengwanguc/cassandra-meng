@@ -231,10 +231,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         final List<QueuedMessage> drainedMessages = new ArrayList<>(drainedMessageSize);
 
         
-        System.out.println("	@meng: outboundTcpConnection.run....()");
-        System.out.println("	@meng: local: " + socket.getLocalSocketAddress().toString()
-        		+ "	remote: " + socket.getRemoteSocketAddress().toString());
-        
         
         outer:
         while (!isStopped)
@@ -268,8 +264,12 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
                     if (qm.isTimedOut(System.nanoTime()))
                         dropped.incrementAndGet();
-                    else if (socket != null || connect())
+                    else if (socket != null || connect()) {
+                        System.out.println("	@meng: outboundTcpConnection.run....()");
+                        System.out.println("	@meng: local: " + socket.getLocalSocketAddress().toString()
+                        		+ "	remote: " + socket.getRemoteSocketAddress().toString());
                         writeConnected(qm, count == 1 && backlog.isEmpty());
+                    }
                     else
                     {
                         // Not connected! Clear out the queue, else gossip messages back up. Update dropped

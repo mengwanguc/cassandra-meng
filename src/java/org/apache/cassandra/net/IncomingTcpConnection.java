@@ -84,9 +84,6 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
     @Override
     public void run()
     {
-    	System.out.println("	@meng: calling IncomingTcpConnection.run()....");
-    	Thread.dumpStack();
-    	System.out.println();
         try
         {
             if (version < MessagingService.VERSION_20)

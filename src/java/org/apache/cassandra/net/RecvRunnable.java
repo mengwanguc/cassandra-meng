@@ -44,8 +44,7 @@ public class RecvRunnable implements Runnable {
 	        	InputStream in = socket.getInputStream();
 	        	System.out.println("		@@@meng: inputstream's class name: " + in.getClass().getName());
 	        	System.out.println("		@meng: Starting to read...");
-	        	byte[] data = new byte[1024];
-	        	int c = in.read(data);
+	        	int c = in.read();
 	        	System.out.println("		@meng: finished read from socket...");
 	        } catch (Exception e) {
 	        	CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);

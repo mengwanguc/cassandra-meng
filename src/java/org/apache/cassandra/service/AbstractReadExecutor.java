@@ -41,6 +41,7 @@ import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.metrics.ReadRepairMetrics;
 import org.apache.cassandra.net.MessageOut;
 import org.apache.cassandra.net.MessagingService;
+import org.apache.cassandra.net.RecvRunnable;
 import org.apache.cassandra.schema.SpeculativeRetryParam;
 import org.apache.cassandra.service.StorageProxy.LocalReadRunnable;
 import org.apache.cassandra.tracing.TraceState;
@@ -107,7 +108,12 @@ public abstract class AbstractReadExecutor
                 traceState.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             logger.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             MessageOut<ReadCommand> message = readCommand.createMessage(MessagingService.instance().getVersion(endpoint));
-            MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
+            int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
+            
+            RecvRunnable recvRunnable = new RecvRunnable(message, endpoint);
+            System.out.println("	@MENG: starting recv runnable");
+            new Thread(recvRunnable).start();
+            
         }
 
         // We delay the local (potentially blocking) read till the end to avoid stalling remote requests.

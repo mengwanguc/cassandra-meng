@@ -151,6 +151,11 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     private volatile int currentMsgBufferCount = 0;
     private volatile int targetVersion;
 
+    
+    public Socket getSocket() {
+    	return socket;
+    }
+    
     public OutboundTcpConnection(OutboundTcpConnectionPool pool, String name)
     {
         super("MessagingService-Outgoing-" + pool.endPoint() + "-" + name);

@@ -321,8 +321,12 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
 
         System.out.println("@@@meng: channel's class name: " + channel.getClass().getName());
         
-        while (buffer.hasRemaining())
-            channel.write(buffer);
+        while (buffer.hasRemaining()) {
+            if(channel instanceof FileDispatcherImpl)
+                channel.writeMittcpu(buffer);
+            else
+                channel.write(buffer);
+        }
 
         buffer.clear();
     }

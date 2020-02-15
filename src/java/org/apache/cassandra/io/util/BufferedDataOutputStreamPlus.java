@@ -322,12 +322,12 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
         System.out.println("@@@meng: channel's class name: " + channel.getClass().getName());
         
         while (buffer.hasRemaining()) {
-            if(channel instanceof FileDispatcherImpl) {
-                System.out.println("			yes an instance of FileDispatcherImpl woohoo!!!");
+            if(channel instanceof SocketChannelImpl) {
+                System.out.println("			yes an instance of SocketChannelImpl woohoo!!!");
                 channel.writeMittcpu(buffer);
             }
             else {
-                System.out.println("			oh no its not instance of FileDispatcherImpl!!!");
+                System.out.println("			oh no its not instance of SocketChannelImpl!!!");
                 channel.write(buffer);
             }
         }

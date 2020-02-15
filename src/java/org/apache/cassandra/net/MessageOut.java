@@ -45,6 +45,17 @@ public class MessageOut<T>
     private long payloadSize = -1;
     private int payloadSizeVersion = -1;
 
+    private int deadline = 0;
+
+    public int getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(int deadline) 
+    {
+        this.deadline = deadline;
+    }
+
     // we do support messages that just consist of a verb
     public MessageOut(MessagingService.Verb verb)
     {

@@ -108,6 +108,7 @@ public abstract class AbstractReadExecutor
                 traceState.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             logger.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             MessageOut<ReadCommand> message = readCommand.createMessage(MessagingService.instance().getVersion(endpoint));
+            message.setDeadline(1);
             int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
             
             RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);

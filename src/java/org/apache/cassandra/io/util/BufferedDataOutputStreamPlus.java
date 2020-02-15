@@ -312,7 +312,8 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
         for (ByteBuffer buffer : memory.asByteBuffers(offset, length))
             write(buffer);
     }
-
+    
+    
     /*
      * Count is the number of bytes remaining to write ignoring already remaining capacity
      */
@@ -321,21 +322,37 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
     {
         buffer.flip();
 
+        while (buffer.hasRemaining())
+            channel.write(buffer);
+
+        buffer.clear();
+    }
+    
+    
+    /*
+     * Count is the number of bytes remaining to write ignoring already remaining capacity
+     */
+    @DontInline
+    public void doFlushMittcpu(int count) throws IOException
+    {
+        buffer.flip();
+
         System.out.println("        !!!!!!@@@meng: channel's class name: " + channel.getClass().getName());
         
         while (buffer.hasRemaining()) {
             if(channel instanceof SocketChannelImpl) {
-                System.out.println("			yes an instance of SocketChannelImpl woohoo!!!");
+                System.out.println("            yes an instance of SocketChannelImpl woohoo!!!");
                 ((SocketChannelImpl)channel).writeMittcpu(buffer);
             }
             else {
-                System.out.println("			oh no its not instance of SocketChannelImpl!!!");
+                System.out.println("            oh no its not instance of SocketChannelImpl!!!");
                 channel.write(buffer);
             }
         }
 
         buffer.clear();
     }
+    
 
     @Override
     public void flush() throws IOException

@@ -356,8 +356,12 @@ public class OutboundTcpConnection extends FastThreadLocalThread
             writeInternal(qm.message, qm.id, timestampMillis);
 
             completed++;
-            if (flush)
-                out.flush();
+            if (flush) {
+                if (out instanceof BufferedDataOutputStreamPlus)
+                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(count);
+                else
+                    out.flush();
+            }
         }
         catch (Throwable e)
         {

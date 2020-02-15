@@ -91,7 +91,9 @@ public class MessageOut<T>
     {
         ImmutableMap.Builder<String, byte[]> builder = ImmutableMap.builder();
         builder.putAll(parameters).put(key, value);
-        return new MessageOut<T>(verb, payload, serializer, builder.build());
+        MessageOut<T> newMessage = new MessageOut<T>(verb, payload, serializer, builder.build());
+        newMessage.setDeadline(this.deadline);
+        return newMessage;
     }
 
     public Stage getStage()

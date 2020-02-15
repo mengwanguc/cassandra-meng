@@ -23,6 +23,8 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
+import sun.nio.ch.SocketChannelImpl;
+
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -319,17 +321,17 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
     {
         buffer.flip();
 
-        System.out.println("        !!!@@@meng: channel's class name: " + channel.getClass().getName());
+        System.out.println("        !!!!!!@@@meng: channel's class name: " + channel.getClass().getName());
         
         while (buffer.hasRemaining()) {
-//            if(channel instanceof SocketChannelImpl) {
-//                System.out.println("			yes an instance of SocketChannelImpl woohoo!!!");
-//                channel.writeMittcpu(buffer);
-//            }
-//            else {
-//                System.out.println("			oh no its not instance of SocketChannelImpl!!!");
+            if(channel instanceof SocketChannelImpl) {
+                System.out.println("			yes an instance of SocketChannelImpl woohoo!!!");
+                ((SocketChannelImpl)channel).writeMittcpu(buffer);
+            }
+            else {
+                System.out.println("			oh no its not instance of SocketChannelImpl!!!");
                 channel.write(buffer);
-//            }
+            }
         }
 
         buffer.clear();

@@ -242,6 +242,10 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         {
             try
             {
+                for (QueuedMessage qm : backlog) {
+                    System.out.println("    ??????@meng: backlog.qm.message.deadline:" + Integer.toString(qm.message.getDeadline()));
+                    
+                }
                 cs.coalesce(backlog, drainedMessages, drainedMessageSize);
             }
             catch (InterruptedException e)

@@ -319,7 +319,7 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
     {
         buffer.flip();
 
-        System.out.println("@@@meng: channel's class name: " + channel.getClass().getName());
+        System.out.println("        !!!@@@meng: channel's class name: " + channel.getClass().getName());
         
         while (buffer.hasRemaining()) {
             if(channel instanceof SocketChannelImpl) {

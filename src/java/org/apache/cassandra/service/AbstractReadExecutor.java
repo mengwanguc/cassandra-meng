@@ -112,7 +112,7 @@ public abstract class AbstractReadExecutor
             int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
             
             RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);
-            System.out.println("	@MENG: starting recv runnable");
+            System.out.println("	@MENG: starting recv runnable...... message.deadline:" + Integer.toString(message.getDeadline()));
             new Thread(recvRunnable).start();
         }
 

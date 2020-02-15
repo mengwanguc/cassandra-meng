@@ -185,8 +185,8 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         expireMessages(nanoTime);
         try
         {
-        	if (poolReference.getID().getHostAddress() == "155.98.36.78") {
-        		System.out.println("backlog.enqueue...");
+        	if (poolReference.getID().getHostAddress().equals("155.98.36.78")) {
+        		System.out.println("~~~~~~    backlog.enqueue...  message.deadline:" + Integer.toString(message.getDeadline()));
         	}
             backlog.put(new QueuedMessage(message, id, nanoTime));
         }

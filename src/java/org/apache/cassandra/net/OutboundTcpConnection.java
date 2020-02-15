@@ -242,10 +242,10 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         {
             try
             {
-                for (QueuedMessage qm : backlog) {
-                    System.out.println("    ??????@meng: backlog.qm.message.deadline:" + Integer.toString(qm.message.getDeadline()));
-                    
-                }
+//                for (QueuedMessage qm : backlog) {
+//                    System.out.println("    ??????@meng: backlog.qm.message.deadline:" + Integer.toString(qm.message.getDeadline()));
+//                    
+//                }
                 cs.coalesce(backlog, drainedMessages, drainedMessageSize);
             }
             catch (InterruptedException e)
@@ -277,6 +277,8 @@ public class OutboundTcpConnection extends FastThreadLocalThread
                         System.out.println("	@meng: outboundTcpConnection.run....()");
                         System.out.println("	@meng: local: " + socket.getLocalSocketAddress().toString()
                         		+ "	remote: " + socket.getRemoteSocketAddress().toString());
+                      System.out.println("    ??????@meng: in run(): qm.message.deadline:" + Integer.toString(qm.message.getDeadline()));
+
                         writeConnected(qm, count == 1 && backlog.isEmpty());
                     }
                     else

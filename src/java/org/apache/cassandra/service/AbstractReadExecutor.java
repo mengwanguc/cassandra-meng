@@ -83,16 +83,20 @@ public abstract class AbstractReadExecutor
 
     protected void makeDataRequests(Iterable<InetAddress> endpoints)
     {
-        makeRequests(command, endpoints);
-
+        makeRequests(command, endpoints, 0);
+    }
+    
+    protected void makeDataRequestsMittcpu(Iterable<InetAddress> endpoints)
+    {
+        makeRequests(command, endpoints, 1);
     }
 
     protected void makeDigestRequests(Iterable<InetAddress> endpoints)
     {
-        makeRequests(command.copyAsDigestQuery(), endpoints);
+        makeRequests(command.copyAsDigestQuery(), endpoints, 0);
     }
 
-    private void makeRequests(ReadCommand readCommand, Iterable<InetAddress> endpoints)
+    private void makeRequests(ReadCommand readCommand, Iterable<InetAddress> endpoints, int deadline)
     {
         boolean hasLocalEndpoint = false;
 
@@ -108,7 +112,7 @@ public abstract class AbstractReadExecutor
                 traceState.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             logger.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             MessageOut<ReadCommand> message = readCommand.createMessage(MessagingService.instance().getVersion(endpoint));
-            message.setDeadline(1);
+            message.setDeadline(deadline);
             int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
             
             RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);

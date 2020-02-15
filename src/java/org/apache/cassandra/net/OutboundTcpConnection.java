@@ -358,7 +358,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
             completed++;
             if (flush) {
                 if (out instanceof BufferedDataOutputStreamPlus)
-                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(count);
+                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(0);
                 else
                     out.flush();
             }

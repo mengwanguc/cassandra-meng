@@ -55,7 +55,7 @@ public class RecvRunnable implements Runnable {
 	            
 	            IAsyncCallback cb = callbackInfo.callback;
 	            if (cb instanceof ReadCallback) {
-	                ((Readcallback) cb).onMittcpuRejection();
+	                ((ReadCallback) cb).onMittcpuRejection();
 	            }
 	            
 	            

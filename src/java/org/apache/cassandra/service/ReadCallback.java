@@ -288,7 +288,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
     
     public void onMittcpuRejection() {
         ReadCommand retryCommand = executor.command;
-        InetAddress extraReplica = Iterables.getLast(executor.targetReplicas);
+        InetAddress extraReplica = executor.targetReplicas.get(executor.targetReplicas.size() - 1);
         int version = MessagingService.instance().getVersion(extraReplica);
         MessagingService.instance().sendRRWithFailure(retryCommand.createMessage(version), extraReplica, this);
     }

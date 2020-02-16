@@ -46,16 +46,18 @@ public class RecvRunnable implements Runnable {
 	        	InputStream in = socket.getInputStream();
 	        	int n = in.read();
 	        	
-	            CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
-	            if (callbackInfo == null)
-	                return;
-	            
-	            IAsyncCallback cb = callbackInfo.callback;
-	            if (cb instanceof ReadCallback) {
-	                ((ReadCallback) cb).onMittcpuRejection();
-	            }
-	            
-	            
+	        	if (n == -16) {
+	        	    System.out.println("  @meng: Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString());
+	        	    
+	                CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
+	                if (callbackInfo == null)
+	                    return;
+	                
+	                IAsyncCallback cb = callbackInfo.callback;
+	                if (cb instanceof ReadCallback) {
+	                    ((ReadCallback) cb).onMittcpuRejection();
+	                }
+	        	}
 	        } catch (Exception e) {
 	        	System.out.println(e.getStackTrace());
 	        }

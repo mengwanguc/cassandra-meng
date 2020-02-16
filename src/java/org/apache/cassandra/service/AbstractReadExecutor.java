@@ -245,7 +245,7 @@ public abstract class AbstractReadExecutor
 
         public void executeAsync()
         {
-            makeDataRequests(targetReplicas.subList(0, 1));
+            makeDataRequestsMittcpu(targetReplicas.subList(0, 1));
             if (targetReplicas.size() > 1)
                 makeDigestRequests(targetReplicas.subList(1, targetReplicas.size()));
         }

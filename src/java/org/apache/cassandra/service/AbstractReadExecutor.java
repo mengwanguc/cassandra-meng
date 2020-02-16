@@ -69,6 +69,7 @@ public abstract class AbstractReadExecutor
         this.command = command;
         this.targetReplicas = targetReplicas;
         this.handler = new ReadCallback(new DigestResolver(keyspace, command, consistencyLevel, targetReplicas.size()), consistencyLevel, command, targetReplicas, queryStartNanoTime);
+        this.handler.setExecutor(this);
         this.traceState = Tracing.instance.get();
 
         // Set the digest version (if we request some digests). This is the smallest version amongst all our target replicas since new nodes
@@ -183,7 +184,7 @@ public abstract class AbstractReadExecutor
         for (InetAddress replica : targetReplicas) {
         	System.out.println(replica.getHostAddress());
         }
-        System.out.println("done   ");
+        System.out.println("    @meng: got all inetaddresses   ");
         
         
         // Throw UAE early if we don't have enough replicas.
@@ -202,9 +203,28 @@ public abstract class AbstractReadExecutor
         // 11980: Disable speculative retry if using EACH_QUORUM in order to prevent miscounting DC responses
         if (retry.equals(SpeculativeRetryParam.NONE)
             || consistencyLevel == ConsistencyLevel.EACH_QUORUM
-            || consistencyLevel.blockFor(keyspace) == allReplicas.size())
-            return new NeverSpeculatingReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
+            || consistencyLevel.blockFor(keyspace) == allReplicas.size()) {
+            if (targetReplicas.size() == allReplicas.size()) {
+                return new NeverSpeculatingReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
+            }
+            InetAddress extraReplica = allReplicas.get(targetReplicas.size());
+            if (repairDecision == ReadRepairDecision.DC_LOCAL && targetReplicas.contains(extraReplica))
+            {
+                for (InetAddress address : allReplicas)
+                {
+                    if (!targetReplicas.contains(address))
+                    {
+                        extraReplica = address;
+                        break;
+                    }
+                }
+            }
+            targetReplicas.add(extraReplica);
+            return new MittcpuReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
 
+        }
+            
+            
         if (targetReplicas.size() == allReplicas.size())
         {
             // CL.ALL, RRD.GLOBAL or RRD.DC_LOCAL and a single-DC.
@@ -245,7 +265,7 @@ public abstract class AbstractReadExecutor
 
         public void executeAsync()
         {
-            makeDataRequestsMittcpu(targetReplicas.subList(0, 1));
+            makeDataRequests(targetReplicas.subList(0, 1));
             if (targetReplicas.size() > 1)
                 makeDigestRequests(targetReplicas.subList(1, targetReplicas.size()));
         }
@@ -261,6 +281,39 @@ public abstract class AbstractReadExecutor
         }
     }
 
+    
+    public static class MittcpuReadExecutor extends AbstractReadExecutor
+    {
+        public MittcpuReadExecutor(Keyspace keyspace, ReadCommand command, ConsistencyLevel consistencyLevel, List<InetAddress> targetReplicas, long queryStartNanoTime)
+        {
+            super(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
+        }
+
+        public void executeAsync()
+        {
+            makeDataRequestsMittcpu(targetReplicas.subList(0, 1));
+
+            if (targetReplicas.size() > 1) {
+                List<InetAddress> initialReplicas = targetReplicas.subList(0, targetReplicas.size() - 1);
+                if (initialReplicas.size() > 1)
+                    makeDigestRequests(initialReplicas.subList(1, targetReplicas.size()));
+            }
+        }
+
+        public void maybeTryAdditionalReplicas()
+        {
+            // no-op
+        }
+
+        public Collection<InetAddress> getContactedReplicas()
+        {
+            return targetReplicas.subList(0, targetReplicas.size() - 1);
+        }
+    }
+    
+    
+    
+    
     private static class SpeculatingReadExecutor extends AbstractReadExecutor
     {
         private final ColumnFamilyStore cfs;

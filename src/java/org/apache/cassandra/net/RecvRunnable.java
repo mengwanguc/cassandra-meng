@@ -23,6 +23,8 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 import org.apache.cassandra.db.ReadCommand;
+import org.apache.cassandra.service.ReadCallback;
+import org.apache.cassandra.tracing.Tracing;
 
 
 public class RecvRunnable implements Runnable {
@@ -46,8 +48,18 @@ public class RecvRunnable implements Runnable {
 	        	System.out.println("		@meng: Starting to read...");
 	        	int n = in.read();
 	        	System.out.println("		@meng: finished read from socket... n: " + Integer.toString(n) );
+	        	
+	            CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
+	            if (callbackInfo == null)
+	                return;
+	            
+	            IAsyncCallback cb = callbackInfo.callback;
+	            if (cb instanceof ReadCallback) {
+	                ((Readcallback) cb).onMittcpuRejection();
+	            }
+	            
+	            
 	        } catch (Exception e) {
-	        	CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
 	        	System.out.println(e.getStackTrace());
 	        }
 	        

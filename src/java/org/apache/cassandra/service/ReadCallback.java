@@ -69,6 +69,21 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
     private final Map<InetAddress, RequestFailureReason> failureReasonByEndpoint;
 
     private final Keyspace keyspace; // TODO push this into ConsistencyLevel?
+    
+    
+    private AbstractReadExecutor executor;
+    
+    public void setExecutor(AbstractReadExecutor executor)
+    {
+        this.executor = executor;
+    }
+    
+    public AbstractReadExecutor getExecutor()
+    {
+        return this.executor;
+    }
+    
+    
 
     /**
      * Constructor when response count has to be calculated and blocked for.
@@ -269,5 +284,12 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
 
         if (blockfor + n > endpoints.size())
             condition.signalAll();
+    }
+    
+    public void onMittcpuRejection() {
+        ReadCommand retryCommand = executor.command;
+        InetAddress extraReplica = Iterables.getLast(executor.targetReplicas);
+        int version = MessagingService.instance().getVersion(extraReplica);
+        MessagingService.instance().sendRRWithFailure(retryCommand.createMessage(version), extraReplica, this);
     }
 }

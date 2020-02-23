@@ -113,11 +113,13 @@ public abstract class AbstractReadExecutor
                 traceState.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             logger.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
             MessageOut<ReadCommand> message = readCommand.createMessage(MessagingService.instance().getVersion(endpoint));
+            
             message.setDeadline(deadline);
+            if (deadline > 0)
+                System.out.println("    @meng: Sending MittCPU request to " + endpoint.getHostAddress());
             int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
             
             RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);
-            System.out.println("	@MENG: starting recv runnable...... message.deadline:" + Integer.toString(message.getDeadline()));
             new Thread(recvRunnable).start();
         }
 
@@ -164,27 +166,13 @@ public abstract class AbstractReadExecutor
         Keyspace keyspace = Keyspace.open(command.metadata().ksName);
         List<InetAddress> allReplicas = StorageProxy.getLiveSortedEndpoints(keyspace, command.partitionKey());
         
-//        for (InetAddress replica : allReplicas) {
-//        	System.out.println(replica.getHostAddress());
-//        }
-//        System.out.println("done   ");
-        System.out.print("Consistency Level: ");
-        System.out.println(consistencyLevel);
-
         
         // 11980: Excluding EACH_QUORUM reads from potential RR, so that we do not miscount DC responses
         ReadRepairDecision repairDecision = consistencyLevel == ConsistencyLevel.EACH_QUORUM
                                             ? ReadRepairDecision.NONE
                                             : command.metadata().newReadRepairDecision();
-        System.out.print("ReadRepairDecision: ");
-        System.out.println(repairDecision);
         
         List<InetAddress> targetReplicas = consistencyLevel.filterForQuery(keyspace, allReplicas, repairDecision);
-
-        for (InetAddress replica : targetReplicas) {
-        	System.out.println(replica.getHostAddress());
-        }
-        System.out.println("    @meng: got all inetaddresses   ");
         
         
         // Throw UAE early if we don't have enough replicas.

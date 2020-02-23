@@ -44,21 +44,20 @@ public class RecvRunnable implements Runnable {
 		if (socket != null) {
 	        try {
 	        	InputStream in = socket.getInputStream();
-	        	System.out.println("		@@@meng: inputstream's class name: " + in.getClass().getName());
-	        	System.out.println("		@meng: Starting to read...");
 	        	int n = in.read();
-	        	System.out.println("		@meng: finished read from socket... n: " + Integer.toString(n) );
 	        	
-	            CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
-	            if (callbackInfo == null)
-	                return;
-	            
-	            IAsyncCallback cb = callbackInfo.callback;
-	            if (cb instanceof ReadCallback) {
-	                ((ReadCallback) cb).onMittcpuRejection();
-	            }
-	            
-	            
+	        	if (n == -16) {
+	        	    System.out.println("  @meng: Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString());
+	        	    
+	                CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
+	                if (callbackInfo == null)
+	                    return;
+	                
+	                IAsyncCallback cb = callbackInfo.callback;
+	                if (cb instanceof ReadCallback) {
+	                    ((ReadCallback) cb).onMittcpuRejection();
+	                }
+	        	}
 	        } catch (Exception e) {
 	        	System.out.println(e.getStackTrace());
 	        }

@@ -191,7 +191,6 @@ public abstract class CBUtil
 
     public static void writeBytes(byte[] bytes, ByteBuf cb)
     {
-    	System.out.println("CB.writebytes....");
         cb.writeShort(bytes.length);
         cb.writeBytes(bytes);
     }

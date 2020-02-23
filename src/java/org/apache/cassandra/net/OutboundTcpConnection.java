@@ -185,9 +185,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         expireMessages(nanoTime);
         try
         {
-        	if (poolReference.getID().getHostAddress().equals("155.98.36.78")) {
-        		System.out.println("~~~~~~    backlog.enqueue...  message.deadline:" + Integer.toString(message.getDeadline()));
-        	}
             backlog.put(new QueuedMessage(message, id, nanoTime));
         }
         catch (InterruptedException e)
@@ -242,10 +239,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
         {
             try
             {
-//                for (QueuedMessage qm : backlog) {
-//                    System.out.println("    ??????@meng: backlog.qm.message.deadline:" + Integer.toString(qm.message.getDeadline()));
-//                    
-//                }
                 cs.coalesce(backlog, drainedMessages, drainedMessageSize);
             }
             catch (InterruptedException e)
@@ -274,11 +267,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
                     if (qm.isTimedOut(System.nanoTime()))
                         dropped.incrementAndGet();
                     else if (socket != null || connect()) {
-                        System.out.println("	@meng: outboundTcpConnection.run....()");
-                        System.out.println("	@meng: local: " + socket.getLocalSocketAddress().toString()
-                        		+ "	remote: " + socket.getRemoteSocketAddress().toString());
-                      System.out.println("    ??????@meng: in run(): qm.message.deadline:" + Integer.toString(qm.message.getDeadline()));
-
                         writeConnected(qm, count == 1 && backlog.isEmpty());
                     }
                     else
@@ -331,10 +319,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     private void writeConnected(QueuedMessage qm, boolean flush)
     {
-    	if (poolReference.getID().getHostAddress().equals("155.98.36.78")) {
-            System.out.println("outboundTcpConnection.writeConnected....()");
-    	}
-        
         try
         {
             byte[] sessionBytes = qm.message.parameters.get(Tracing.TRACE_HEADER);
@@ -363,8 +347,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
             completed++;
             if (flush) {
-                System.out.println("        ???@meng: deadline:" + Integer.toString(qm.message.getDeadline())
-                        + " out.class:" + out.getClass().getName());
                 if ((qm.message.getDeadline() == 1) && (out instanceof BufferedDataOutputStreamPlus))
                     ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(0);
                 else
@@ -491,8 +473,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
                 writeHeader(out, targetVersion, shouldCompressConnection());
                 out.flush();
                 
-                System.out.println("@@@meng: out's class name:" + out.getClass().getName());
-
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 int maxTargetVersion = handshakeVersion(in);
                 if (maxTargetVersion == NO_VERSION)

@@ -121,7 +121,6 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
         long time = unit.toNanos(timePastStart) - (System.nanoTime() - queryStartNanoTime);
         try
         {
-        	System.out.println("		@@meng: calling ReadCallback.await...");
             return condition.await(time, TimeUnit.NANOSECONDS);
         }
         catch (InterruptedException ex)
@@ -171,8 +170,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
 
     public void response(MessageIn<ReadResponse> message)
     {
-    	System.out.println("		@meng: calling ReadCallback.response......");
-    	System.out.println();
+        System.out.println("    @meng: Received response from " + message.from.getHostAddress());
         resolver.preprocess(message);
         int n = waitingFor(message.from)
               ? recievedUpdater.incrementAndGet(this)
@@ -290,6 +288,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
         ReadCommand retryCommand = executor.command;
         InetAddress extraReplica = executor.targetReplicas.get(executor.targetReplicas.size() - 1);
         int version = MessagingService.instance().getVersion(extraReplica);
+        System.out.println("    @meng: sending Failover message to " + extraReplica.getHostAddress());
         MessagingService.instance().sendRRWithFailure(retryCommand.createMessage(version), extraReplica, this);
     }
 }

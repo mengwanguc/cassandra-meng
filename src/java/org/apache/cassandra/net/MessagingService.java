@@ -1303,15 +1303,6 @@ public final class MessagingService implements MessagingServiceMBean
                         socket.close();
                         continue;
                     }
-
-                    
-                    System.out.println("	@meng: Socket accepted...");
-                    System.out.print("	@meng: total number of connections: ");
-                    System.out.println(connections.size());
-                    System.out.println("	@meng: local: " + socket.getLocalSocketAddress().toString()
-                    		+ "	remote: " + socket.getRemoteSocketAddress().toString());
-                    System.out.println();
-                    
                     
                     socket.setKeepAlive(true);
                     socket.setSoTimeout(2 * OutboundTcpConnection.WAIT_FOR_VERSION_MAX_TIME);

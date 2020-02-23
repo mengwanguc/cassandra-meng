@@ -186,12 +186,7 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
     }
 
     private InetAddress receiveMessage(DataInputPlus input, int version) throws IOException
-    {
-    	
-        System.out.println("	@meng: incomingTcpConnection.receiveMessage....()");
-        System.out.println("	@meng: local: " + socket.getLocalSocketAddress().toString()
-        		+ "	remote: " + socket.getRemoteSocketAddress().toString());
-    	
+    {	
         int id;
         if (version < MessagingService.VERSION_20)
             id = Integer.parseInt(input.readUTF());

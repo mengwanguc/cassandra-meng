@@ -1722,6 +1722,10 @@ public class StorageProxy implements StorageProxyMBean
     throws UnavailableException, ReadFailureException, ReadTimeoutException
     {
         int cmdCount = commands.size();
+        
+        System.out.println("    @meng: fetching rows....");
+        
+        System.out.println(Thread.currentThread().getStackTrace());
                 
         SinglePartitionReadLifecycle[] reads = new SinglePartitionReadLifecycle[cmdCount];
         for (int i = 0; i < cmdCount; i++)

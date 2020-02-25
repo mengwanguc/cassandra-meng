@@ -253,7 +253,7 @@ public class QueryProcessor implements QueryHandler
         if (!queryState.getClientState().isInternal)
             metrics.regularStatementsExecuted.inc();
         
-        System.out.println("    @meng: public ResultMessage process");
+        System.out.println("    ---- @meng: public ResultMessage process: " + query);
 
         return processStatement(prepared, queryState, options, queryStartNanoTime);
     }

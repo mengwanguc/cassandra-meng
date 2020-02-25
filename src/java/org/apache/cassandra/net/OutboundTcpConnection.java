@@ -321,6 +321,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     {
         try
         {
+            if (socket.getInetAddress().getHostAddress().equals("155.98.36.70")) {
+                System.out.println("    @meng: sending something to 155.98.36.70...");
+            }
             byte[] sessionBytes = qm.message.parameters.get(Tracing.TRACE_HEADER);
             if (sessionBytes != null)
             {

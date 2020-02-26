@@ -63,6 +63,15 @@ public abstract class AbstractReadExecutor
     protected final List<InetAddress> targetReplicas;
     protected final ReadCallback handler;
     protected final TraceState traceState;
+    long commandCounter = 0;
+    
+    public void setCommandCounter(long cc) {
+        this.commandCounter = cc;
+    }
+    
+    public long getCommandCounter() {
+        return this.commandCounter;
+    }
 
     AbstractReadExecutor(Keyspace keyspace, ReadCommand command, ConsistencyLevel consistencyLevel, List<InetAddress> targetReplicas, long queryStartNanoTime)
     {
@@ -116,7 +125,8 @@ public abstract class AbstractReadExecutor
             
             message.setDeadline(deadline);
             if (deadline > 0)
-                System.out.println("    @meng: Sending MittCPU request to " + endpoint.getHostAddress());
+                System.out.println("    @meng: " + Long.toString(this.commandCounter)
+                        + " Sending MittCPU request to " + endpoint.getHostAddress());
             int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
             
             RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);

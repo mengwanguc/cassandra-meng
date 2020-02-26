@@ -76,6 +76,8 @@ public class StorageProxy implements StorageProxyMBean
 {
     public static final String MBEAN_NAME = "org.apache.cassandra.db:type=StorageProxy";
     private static final Logger logger = LoggerFactory.getLogger(StorageProxy.class);
+    
+    public static long commandCounter = 0;
 
     public static final String UNREACHABLE = "UNREACHABLE";
 
@@ -1775,6 +1777,8 @@ public class StorageProxy implements StorageProxyMBean
         {
             this.command = command;
             this.executor = AbstractReadExecutor.getReadExecutor(command, consistency, queryStartNanoTime);
+            this.executor.setCommandCounter(commandCounter);
+            commandCounter += 1;
             this.consistency = consistency;
             this.queryStartNanoTime = queryStartNanoTime;
         }

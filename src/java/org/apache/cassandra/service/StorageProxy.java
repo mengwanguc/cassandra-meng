@@ -1727,9 +1727,7 @@ public class StorageProxy implements StorageProxyMBean
         
         System.out.println("    @meng: fetching rows....");
         long startTime = System.nanoTime();
-        
-        Thread.currentThread().dumpStack();
-                
+                        
         SinglePartitionReadLifecycle[] reads = new SinglePartitionReadLifecycle[cmdCount];
         for (int i = 0; i < cmdCount; i++)
             reads[i] = new SinglePartitionReadLifecycle(commands.get(i), consistencyLevel, queryStartNanoTime);

@@ -43,11 +43,18 @@ public class RecvRunnable implements Runnable {
 		Socket socket = connection.getSocket();
 		if (socket != null) {
 	        try {
+	            long startTime = System.nanoTime();
 	        	InputStream in = socket.getInputStream();
 	        	int n = in.read();
 	        	
 	        	if (n == -16) {
 	        	    System.out.println("  @meng: Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString());
+	        	    
+	                long endTime = System.nanoTime();
+	                long latency = endTime - startTime;
+	                double latencyDouble = ((double) latency) / 1000000;
+	                
+	                System.out.println("        @meng: RecvRunnable have waited for " + Double.toString(latencyDouble) + "ms");
 	        	    
 	                CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
 	                if (callbackInfo == null)

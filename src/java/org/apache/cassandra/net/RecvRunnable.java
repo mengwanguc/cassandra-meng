@@ -51,7 +51,8 @@ public class RecvRunnable implements Runnable {
 	                long endTime = System.nanoTime();
 	                long latency = endTime - startTime;
 	                double latencyDouble = ((double) latency) / 1000000;
-	        	    System.out.println("  @meng: Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString());
+	        	    System.out.println("  @meng: Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString()
+	        	            + " after " + Double.toString(latencyDouble) + "ms");
 	        	    
 
 	                

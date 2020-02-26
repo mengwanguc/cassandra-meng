@@ -171,6 +171,9 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
     public void response(MessageIn<ReadResponse> message)
     {
         System.out.println("    @meng: Received response from " + message.from.getHostAddress());
+        long latency = System.nanoTime() - queryStartNanoTime;
+        double latencyDouble = ((double) latency) / 1000000;
+        System.out.println("        @meng: receive response have waited for " + Double.toString(latencyDouble) + "ms");
         resolver.preprocess(message);
         int n = waitingFor(message.from)
               ? recievedUpdater.incrementAndGet(this)
@@ -292,6 +295,6 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
         MessagingService.instance().sendRRWithFailure(retryCommand.createMessage(version), extraReplica, this);
         long latency = System.nanoTime() - queryStartNanoTime;
         double latencyDouble = ((double) latency) / 1000000;
-        System.out.println("        @meng: have waited for " + Double.toString(latencyDouble) + "ms");
+        System.out.println("        @meng: send failover have waited for " + Double.toString(latencyDouble) + "ms");
     }
 }

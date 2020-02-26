@@ -125,7 +125,7 @@ public abstract class AbstractReadExecutor
             
             message.setDeadline(deadline);
             if (deadline > 0)
-                System.out.println("    @meng: " + Long.toString(this.commandCounter)
+                System.out.println("    @meng: " + System.currentTimeMillis() + " - " + Long.toString(this.commandCounter)
                         + " Sending MittCPU request to " + endpoint.getHostAddress());
             int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
             

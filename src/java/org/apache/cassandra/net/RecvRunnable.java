@@ -57,8 +57,10 @@ public class RecvRunnable implements Runnable {
 	                if (cb instanceof ReadCallback) {
 	                    ((ReadCallback) cb).onMittcpuRejection();
 	                }
+	                System.out.println("   @meng: finished ... got MittCPU rejection....");
 	        	}
 	        } catch (Exception e) {
+	            System.out.println("   @meng: error when trying to get Mittcpu rejection:");
 	        	System.out.println(e.getStackTrace());
 	        }
 	        

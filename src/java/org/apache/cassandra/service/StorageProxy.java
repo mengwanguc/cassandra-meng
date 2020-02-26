@@ -1756,7 +1756,7 @@ public class StorageProxy implements StorageProxyMBean
         long latency = endTime - startTime;
         double latencyDouble = ((double) latency) / 1000000;
         
-        System.out.println("        @meng: have waited for " + Double.toString(latencyDouble) + "ms");
+//        System.out.println("        @meng: have waited for " + Double.toString(latencyDouble) + "ms");
 
         return PartitionIterators.concat(results);
     }

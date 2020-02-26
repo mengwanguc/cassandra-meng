@@ -1724,6 +1724,7 @@ public class StorageProxy implements StorageProxyMBean
         int cmdCount = commands.size();
         
         System.out.println("    @meng: fetching rows....");
+        long startTime = System.nanoTime();
         
         Thread.currentThread().dumpStack();
                 
@@ -1750,6 +1751,12 @@ public class StorageProxy implements StorageProxyMBean
             assert reads[i].isDone();
             results.add(reads[i].getResult());
         }
+        
+        long endTime = System.nanoTime();
+        long latency = endTime - startTime;
+        double latencyDouble = ((double) latency) / 1000000;
+        
+        System.out.println("        @meng: have waited for " + Long.toString(latencyDouble) + "ms");
 
         return PartitionIterators.concat(results);
     }

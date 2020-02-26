@@ -1725,7 +1725,8 @@ public class StorageProxy implements StorageProxyMBean
     {
         int cmdCount = commands.size();
         
-        System.out.println("    @meng: fetching rows....");
+        System.out.println("    @meng: " + Long.toString(System.currentTimeMillis()) + " - " + Long.toString(commandCounter) 
+                + " - fetching rows....");
         long startTime = System.nanoTime();
                         
         SinglePartitionReadLifecycle[] reads = new SinglePartitionReadLifecycle[cmdCount];

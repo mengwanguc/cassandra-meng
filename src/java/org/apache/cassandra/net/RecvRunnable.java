@@ -61,8 +61,9 @@ public class RecvRunnable implements Runnable {
 	                
 	                IAsyncCallback cb = callbackInfo.callback;
 	                if (cb instanceof ReadCallback) {
-	                    System.out.println("  @meng: " + Long.toString(((ReadCallback) cb).getExecutor().getCommandCounter()) 
-	                            + " Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString()
+	                    System.out.println("   @meng: " + System.currentTimeMillis() + " - " 
+	                            + Long.toString(((ReadCallback) cb).getExecutor().getCommandCounter()) 
+	                            + " - Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString()
 	                            + " after " + Double.toString(latencyDouble) + "ms");
 	                    ((ReadCallback) cb).onMittcpuRejection();
 	                }

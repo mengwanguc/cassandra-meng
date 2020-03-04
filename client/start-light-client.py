@@ -1,8 +1,8 @@
 import uuid
 import time
-#import pandas as pd
+import pandas as pd
 import io
-#import numpy as np
+import numpy as np
 import math
 import os.path
 import socket
@@ -16,7 +16,7 @@ from random import randrange
 
 
 cluster = Cluster(
-	['155.98.36.70'], 
+	['c.cass-5n.ucare.emulab.net'], 
     # load_balancing_policy=blacklist_filter_policy
     )
 
@@ -47,9 +47,9 @@ def run_query(query, id):
 		# Should never reach here!
 		logging("FAILED, received exception in the client side!")
 
-def run_query_async(query, id):
+def run_query_async(query, id, studentid):
 	start_time = time.time()
-	future = session.execute_async(query)
+	future = session.execute_async(query, [studentid])
 	future.add_callbacks(
 		callback=handle_success, callback_kwargs={'start_time': start_time, 'id': id},
 		errback=handle_error, errback_args=(id, start_time))
@@ -90,24 +90,27 @@ def is_heavy_load_running():
 	return True
 	# because the heavy-client is not running on the same node!
 
-user_lookup_stmt = session.prepare("select * from students where id = 3")
+user_lookup_stmt = session.prepare("select * from students where id = ?")
 batch_size = 3
-sleep_duration = 0.012
+sleep_duration = 0.015
 	# 3*4ms = 12ms
 # 1
 # ==========================================================================================
 #rand = randrange(4059)
-#file_name = '~/Project/MitMem-Cassandra/workload/random_ids/ids_'+str(rand)+'.csv'
-#df = pd.read_csv(file_name, index_col=0)
+file_name = "tokens.txt"
+df = pd.read_csv(file_name, index_col=0)
+row = df.index.values
+
 total_req = 5000
 #logging(file_name)
 counter = 0
+
+print(row)
 for index in range(0,total_req):
 #	query = "select * from students where id = 3 or id = " + str(id + 100000000)
-#	query = "select * from students where id = 3"
+#	query = "select * from students where id = " + str(row[index])
 #	run_query_async(query,index)
-#	bound = user_lookup_stmt.bind([uuid.UUID(str(row['id']))])
-	run_query_async(user_lookup_stmt, index)
+	run_query_async(user_lookup_stmt, index, row[index])
 	counter = counter + 1
 	if (counter == batch_size):
 		counter = 0

@@ -1,0 +1,6 @@
+[1054873.054972] perf interrupt took too long (5016 > 5000), lowering kernel.perf_event_max_sample_rate to 25000
+[1196193.255678] NFS: Registering the id_resolver key type
+[1196193.255695] Key type id_resolver registered
+[1196193.255698] Key type id_legacy registered
+[1372344.382130] EXT4-fs (sdb): mounting ext2 file system using the ext4 subsystem
+[1372344.444908] EXT4-fs (sdb): mounted filesystem without journal. Opts: (null)

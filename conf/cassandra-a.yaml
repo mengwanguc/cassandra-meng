@@ -1171,16 +1171,16 @@ tombstone_failure_threshold: 100000
 
 # Log WARN on any multiple-partition batch size exceeding this value. 5kb per batch by default.
 # Caution should be taken on increasing the size of this threshold as it can lead to node instability.
-batch_size_warn_threshold_in_kb: 5
+batch_size_warn_threshold_in_kb: 400
 
 # Fail any multiple-partition batch exceeding this value. 50kb (10x warn threshold) by default.
-batch_size_fail_threshold_in_kb: 50
+batch_size_fail_threshold_in_kb: 800
 
 # Log WARN on any batches not of type LOGGED than span across more partitions than this limit
-unlogged_batch_across_partitions_warn_threshold: 10
+unlogged_batch_across_partitions_warn_threshold: 100
 
 # Log a warning when compacting partitions larger than this value
-compaction_large_partition_warning_threshold_mb: 100
+compaction_large_partition_warning_threshold_mb: 1000
 
 # GC Pauses greater than gc_warn_threshold_in_ms will be logged at WARN level
 # Adjust the threshold based on your application throughput requirement

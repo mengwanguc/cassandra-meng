@@ -351,7 +351,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
             completed++;
             if (flush) {
                 if ((qm.message.getDeadline() == 1) && (out instanceof BufferedDataOutputStreamPlus))
-                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(0);
+                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(qm.id);
                 else
                     out.flush();
             }

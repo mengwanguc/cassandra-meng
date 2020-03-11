@@ -93,7 +93,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     public void startRecvThread() {
         if (recvThreadCreated)
             return;
-        RecvRunnable recvTcpLoop = new RecvTcpLoop(this);
+        RecvTcpLoop recvTcpLoop = new RecvTcpLoop(this);
         recvTcpThread = new Thread(recvTcpLoop);
         recvTcpThread.start();
         recvThreadCreated = true;

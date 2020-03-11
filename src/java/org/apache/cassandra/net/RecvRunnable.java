@@ -45,9 +45,17 @@ public class RecvRunnable implements Runnable {
 	        try {
 	            long startTime = System.nanoTime();
 	        	InputStream in = socket.getInputStream();
-	        	int n = in.read();
+	        	Integer i = new Integer(-1);
+	        	int n;
+	        	
+	        	if (in instanceof Channelinputstream) {
+                    n = ((Channelinputstream) in).readMittcpu(i);
+                } else {
+                    n = in.read();
+                }
 	        	
 	        	if (n == -16) {
+	        	    System.out.println("  rejection msgid: " + i.toString());
 	                long endTime = System.nanoTime();
 	                long latency = endTime - startTime;
 	                double latencyDouble = ((double) latency) / 1000000;

@@ -127,10 +127,7 @@ public abstract class AbstractReadExecutor
             if (deadline > 0)
                 System.out.println("    @meng: " + System.currentTimeMillis() + " - " + Long.toString(this.commandCounter)
                         + " Sending MittCPU request to " + endpoint.getHostAddress());
-            int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
-            
-            RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);
-            new Thread(recvRunnable).start();
+            int id = MessagingService.instance().sendRRWithFailureMittcpu(message, endpoint, handler);
         }
 
         // We delay the local (potentially blocking) read till the end to avoid stalling remote requests.

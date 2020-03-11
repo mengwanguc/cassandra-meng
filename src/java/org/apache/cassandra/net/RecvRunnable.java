@@ -26,6 +26,8 @@ import org.apache.cassandra.db.ReadCommand;
 import org.apache.cassandra.service.ReadCallback;
 import org.apache.cassandra.tracing.Tracing;
 
+import sun.nio.ch.ChannelInputStream;
+
 
 public class RecvRunnable implements Runnable {
 	public MessageOut<ReadCommand> message;
@@ -48,8 +50,8 @@ public class RecvRunnable implements Runnable {
 	        	Integer i = new Integer(-1);
 	        	int n;
 	        	
-	        	if (in instanceof Channelinputstream) {
-                    n = ((Channelinputstream) in).readMittcpu(i);
+	        	if (in instanceof ChannelInputStream) {
+                    n = ((ChannelInputStream) in).readMittcpu(i);
                 } else {
                     n = in.read();
                 }

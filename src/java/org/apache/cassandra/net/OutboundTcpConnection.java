@@ -87,6 +87,20 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     public static final int MAX_COALESCED_MESSAGES = 128;
 
+    private static boolean recvThreadCreated = false;
+    private static Thread recvTcpThread;
+    
+    public void startRecvThread() {
+        if (recvThreadCreated)
+            return;
+        RecvRunnable recvTcpLoop = new RecvTcpLoop(this);
+        recvTcpThread = new Thread(recvTcpLoop)
+        recvTcpThread.start();
+        recvThreadCreated = true;
+    }
+    
+    
+    
     private static CoalescingStrategy newCoalescingStrategy(String displayName)
     {
         return CoalescingStrategies.newCoalescingStrategy(DatabaseDescriptor.getOtcCoalescingStrategy(),
@@ -351,7 +365,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
             completed++;
             if (flush) {
                 if ((qm.message.getDeadline() == 1) && (out instanceof BufferedDataOutputStreamPlus))
-                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(qm.id);
+                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(0);
                 else
                     out.flush();
             }

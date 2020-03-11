@@ -41,7 +41,7 @@ public class RecvTcpLoop implements Runnable {
         while(true) {
             if (socket != null) {
                 try {
-//                    long startTime = System.nanoTime();
+                    long startTime = System.nanoTime();
                     InputStream in = socket.getInputStream();
                     Integer id = new Integer(-1);
                     int n = 0;

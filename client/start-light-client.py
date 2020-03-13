@@ -47,9 +47,9 @@ def run_query(query, id):
 		# Should never reach here!
 		logging("FAILED, received exception in the client side!")
 
-def run_query_async(query, id, studentid):
+def run_query_async(query, id):
 	start_time = time.time()
-	future = session.execute_async(query, [studentid])
+	future = session.execute_async(query)
 	future.add_callbacks(
 		callback=handle_success, callback_kwargs={'start_time': start_time, 'id': id},
 		errback=handle_error, errback_args=(id, start_time))
@@ -91,8 +91,8 @@ def is_heavy_load_running():
 	# because the heavy-client is not running on the same node!
 
 user_lookup_stmt = session.prepare("select * from students where id = ?")
-batch_size = 3
-sleep_duration = 0.015
+batch_size = 1
+sleep_duration = 0.005
 	# 3*4ms = 12ms
 # 1
 # ==========================================================================================
@@ -108,9 +108,10 @@ counter = 0
 print(row)
 for index in range(0,total_req):
 #	query = "select * from students where id = 3 or id = " + str(id + 100000000)
-#	query = "select * from students where id = " + str(row[index])
-#	run_query_async(query,index)
-	run_query_async(user_lookup_stmt, index, row[index])
+#	query = "select * from students where id = 44089"
+	query = "select * from students where id = " + str(row[index])
+	run_query_async(query,index)
+#	run_query_async(user_lookup_stmt, index, row[index])
 	counter = counter + 1
 	if (counter == batch_size):
 		counter = 0

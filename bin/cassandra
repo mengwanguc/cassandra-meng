@@ -84,6 +84,8 @@ elif [ -r "$CASSANDRA_INCLUDE" ]; then
     . "$CASSANDRA_INCLUDE"
 fi
 
+export JAVA_HOME="/home/sda_mount/MitMem-OpenJDK8/java8-mitmem"
+
 # Use JAVA_HOME if set, otherwise look for java in PATH
 if [ -n "$JAVA_HOME" ]; then
     # Why we can't have nice things: Solaris combines x86 and x86_64

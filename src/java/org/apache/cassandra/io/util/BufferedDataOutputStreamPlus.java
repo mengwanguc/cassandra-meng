@@ -339,6 +339,7 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
         
         while (buffer.hasRemaining()) {
             if(channel instanceof SocketChannelImpl) {
+                System.out.println("    @meng: doFlushMittcpu id: " + Integer.toString(id));
                 ((SocketChannelImpl)channel).writeMittcpu(buffer, id);
             }
             else {

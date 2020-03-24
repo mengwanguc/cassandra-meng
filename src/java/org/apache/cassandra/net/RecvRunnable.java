@@ -41,6 +41,7 @@ public class RecvRunnable implements Runnable {
 	}
 	
 	public void run() {
+	    System.out.println("   @meng: RecvRunnable has been created. endpoint: " + endpoint.getHostAddress());
 		OutboundTcpConnection connection = MessagingService.instance().getConnectionPool(endpoint).getConnection(message);
 		Socket socket = connection.getSocket();
 		if (socket != null) {
@@ -79,8 +80,8 @@ public class RecvRunnable implements Runnable {
 	                }
 	        	}
 	        } catch (Exception e) {
-	            System.out.println("   @meng: error when trying to get Mittcpu rejection:");
-	        	System.out.println(e.getStackTrace());
+	            System.out.println("   @meng: error in recvRecvRunnable: ");
+	            e.printStackTrace();
 	        }
 	        
 		}

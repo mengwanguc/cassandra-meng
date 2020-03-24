@@ -37,6 +37,9 @@ public class RecvTcpLoop implements Runnable {
     }
     
     public void run() {
+        System.out.println("   @meng: RecvRunnable has been created. endpoint: " + 
+                    outboundTcpConnection.getSocket().getInetAddress().getHostAddress());
+
         Socket socket = outboundTcpConnection.getSocket();
         while(true) {
             if (socket != null) {
@@ -51,7 +54,7 @@ public class RecvTcpLoop implements Runnable {
                         n = in.read();
                     }
                     if (n == -16) {
-                        System.out.println(id);
+                        System.out.println("  rejection msgid: " + id.toString());
                         long endTime = System.nanoTime();
                         long latency = endTime - startTime;
                         double latencyDouble = ((double) latency) / 1000000;
@@ -73,8 +76,8 @@ public class RecvTcpLoop implements Runnable {
                         }
                     }
                 } catch (Exception e) {
-                    System.out.println("   @meng: error when trying to get Mittcpu rejection:");
-                    System.out.println(e.getStackTrace());
+                    System.out.println("   @meng: error in RecvTcpLoop:");
+                    e.printStackTrace();
                 }
             
             }

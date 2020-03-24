@@ -86,18 +86,6 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     private static final int BUFFER_SIZE = Integer.getInteger(BUFFER_SIZE_PROPERTY, 1024 * 64);
 
     public static final int MAX_COALESCED_MESSAGES = 128;
-
-    private static boolean recvThreadCreated = false;
-    private static Thread recvTcpThread;
-    
-    public void startRecvThread() {
-        if (recvThreadCreated)
-            return;
-        RecvTcpLoop recvTcpLoop = new RecvTcpLoop(this);
-        recvTcpThread = new Thread(recvTcpLoop);
-        recvTcpThread.start();
-        recvThreadCreated = true;
-    }
     
     
     
@@ -165,6 +153,18 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     private volatile int currentMsgBufferCount = 0;
     private volatile int targetVersion;
 
+    
+    private  boolean recvThreadCreated = false;
+    private  Thread recvTcpThread;
+    
+    public void startRecvThread() {
+        if (recvThreadCreated)
+            return;
+        RecvTcpLoop recvTcpLoop = new RecvTcpLoop(this);
+        recvTcpThread = new Thread(recvTcpLoop);
+        recvTcpThread.start();
+        recvThreadCreated = true;
+    }
     
     public Socket getSocket() {
     	return socket;

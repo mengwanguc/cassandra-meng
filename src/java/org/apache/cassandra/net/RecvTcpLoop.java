@@ -54,7 +54,8 @@ public class RecvTcpLoop implements Runnable {
                         n = in.read();
                     }
                     if (n == -16) {
-                        System.out.println("  rejection msgid: " + id.toString());
+                        System.out.println("  rejection msgid: " + id.toString() + "  endpoint: " 
+                                    + outboundTcpConnection.getSocket().getInetAddress().getHostAddress());
                         long endTime = System.nanoTime();
                         long latency = endTime - startTime;
                         double latencyDouble = ((double) latency) / 1000000;

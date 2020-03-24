@@ -64,8 +64,10 @@ public class RecvTcpLoop implements Runnable {
 //                  System.out.println("        @meng: RecvRunnable have waited for " + Double.toString(latencyDouble) + "ms");
                     
                         CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id.intValue());
-                        if (callbackInfo == null)
+                        if (callbackInfo == null) {
+                            System.out.println("    @meng: callback not found for msgid " + Integer.toString(id));
                             continue;
+                        }
 //                    
                         IAsyncCallback cb = callbackInfo.callback;
                         if (cb instanceof ReadCallback) {

@@ -37,7 +37,7 @@ public class RecvTcpLoop implements Runnable {
     }
     
     public void run() {
-        System.out.println("   @meng: RecvRunnable has been created. endpoint: " + 
+        System.out.println("   @meng: RecvTcpLoop has been created. endpoint: " + 
                     outboundTcpConnection.getSocket().getInetAddress().getHostAddress());
 
         Socket socket = outboundTcpConnection.getSocket();
@@ -76,8 +76,13 @@ public class RecvTcpLoop implements Runnable {
                         }
                     }
                 } catch (Exception e) {
-                    System.out.println("   @meng: error in RecvTcpLoop:");
-                    e.printStackTrace();
+                    if (outboundTcpConnection.getSocket().isClosed()) {
+                        System.out.println("    @meng: RecvTcpLoop: socket is closed.");
+                    }
+                    else {
+                        System.out.println("   @meng: error in RecvTcpLoop:");
+                        e.printStackTrace();
+                    }
                 }
             
             }

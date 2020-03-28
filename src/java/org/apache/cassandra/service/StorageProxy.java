@@ -76,6 +76,8 @@ public class StorageProxy implements StorageProxyMBean
 {
     public static final String MBEAN_NAME = "org.apache.cassandra.db:type=StorageProxy";
     private static final Logger logger = LoggerFactory.getLogger(StorageProxy.class);
+    
+    public static long commandCounter = 0;
 
     public static final String UNREACHABLE = "UNREACHABLE";
 
@@ -1722,7 +1724,11 @@ public class StorageProxy implements StorageProxyMBean
     throws UnavailableException, ReadFailureException, ReadTimeoutException
     {
         int cmdCount = commands.size();
-                
+        
+        System.out.println("    @meng: " + Long.toString(System.currentTimeMillis()) + " - " + Long.toString(commandCounter) 
+                + " - fetching rows....");
+        long startTime = System.nanoTime();
+                        
         SinglePartitionReadLifecycle[] reads = new SinglePartitionReadLifecycle[cmdCount];
         for (int i = 0; i < cmdCount; i++)
             reads[i] = new SinglePartitionReadLifecycle(commands.get(i), consistencyLevel, queryStartNanoTime);
@@ -1746,6 +1752,12 @@ public class StorageProxy implements StorageProxyMBean
             assert reads[i].isDone();
             results.add(reads[i].getResult());
         }
+        
+        long endTime = System.nanoTime();
+        long latency = endTime - startTime;
+        double latencyDouble = ((double) latency) / 1000000;
+        
+//        System.out.println("        @meng: have waited for " + Double.toString(latencyDouble) + "ms");
 
         return PartitionIterators.concat(results);
     }
@@ -1764,6 +1776,8 @@ public class StorageProxy implements StorageProxyMBean
         {
             this.command = command;
             this.executor = AbstractReadExecutor.getReadExecutor(command, consistency, queryStartNanoTime);
+            this.executor.setCommandCounter(commandCounter);
+            commandCounter += 1;
             this.consistency = consistency;
             this.queryStartNanoTime = queryStartNanoTime;
         }

@@ -171,6 +171,9 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
     public void response(MessageIn<ReadResponse> message)
     {
         System.out.println("    @meng: Received response from " + message.from.getHostAddress());
+        long latency = System.nanoTime() - queryStartNanoTime;
+        double latencyDouble = ((double) latency) / 1000000;
+        System.out.println("        @meng: receive response have waited for " + Double.toString(latencyDouble) + "ms");
         resolver.preprocess(message);
         int n = waitingFor(message.from)
               ? recievedUpdater.incrementAndGet(this)
@@ -188,7 +191,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
                 StageManager.getStage(Stage.READ_REPAIR).execute(new AsyncRepairRunner(traceState, queryStartNanoTime));
             }
         }
-    }
+    } 
 
     /**
      * @return true if the message counts towards the blockfor threshold
@@ -290,5 +293,8 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
         int version = MessagingService.instance().getVersion(extraReplica);
         System.out.println("    @meng: sending Failover message to " + extraReplica.getHostAddress());
         MessagingService.instance().sendRRWithFailure(retryCommand.createMessage(version), extraReplica, this);
+        long latency = System.nanoTime() - queryStartNanoTime;
+        double latencyDouble = ((double) latency) / 1000000;
+        System.out.println("        @meng: send failover have waited for " + Double.toString(latencyDouble) + "ms");
     }
 }

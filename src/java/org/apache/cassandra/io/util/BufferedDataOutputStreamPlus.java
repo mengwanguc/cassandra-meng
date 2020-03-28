@@ -333,13 +333,14 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
      * Count is the number of bytes remaining to write ignoring already remaining capacity
      */
     @DontInline
-    public void doFlushMittcpu(int count) throws IOException
+    public void doFlushMittcpu(int id) throws IOException
     {
         buffer.flip();
         
         while (buffer.hasRemaining()) {
             if(channel instanceof SocketChannelImpl) {
-                ((SocketChannelImpl)channel).writeMittcpu(buffer);
+                System.out.println("    @meng: doFlushMittcpu id: " + Integer.toString(id));
+                ((SocketChannelImpl)channel).writeMittcpu(buffer, id);
             }
             else {
                 channel.write(buffer);

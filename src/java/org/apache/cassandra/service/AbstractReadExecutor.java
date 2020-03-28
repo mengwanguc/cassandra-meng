@@ -63,6 +63,15 @@ public abstract class AbstractReadExecutor
     protected final List<InetAddress> targetReplicas;
     protected final ReadCallback handler;
     protected final TraceState traceState;
+    long commandCounter = 0;
+    
+    public void setCommandCounter(long cc) {
+        this.commandCounter = cc;
+    }
+    
+    public long getCommandCounter() {
+        return this.commandCounter;
+    }
 
     AbstractReadExecutor(Keyspace keyspace, ReadCommand command, ConsistencyLevel consistencyLevel, List<InetAddress> targetReplicas, long queryStartNanoTime)
     {
@@ -115,12 +124,13 @@ public abstract class AbstractReadExecutor
             MessageOut<ReadCommand> message = readCommand.createMessage(MessagingService.instance().getVersion(endpoint));
             
             message.setDeadline(deadline);
-            if (deadline > 0)
-                System.out.println("    @meng: Sending MittCPU request to " + endpoint.getHostAddress());
-            int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
-            
-            RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);
-            new Thread(recvRunnable).start();
+            if (deadline > 0) {
+                System.out.println("    @meng: " + System.currentTimeMillis() + " - " + Long.toString(this.commandCounter)
+                        + " Sending MittCPU request to " + endpoint.getHostAddress());
+                MessagingService.instance().sendRRWithFailureMittcpu(message, endpoint, handler);
+            } else {
+                MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
+            }
         }
 
         // We delay the local (potentially blocking) read till the end to avoid stalling remote requests.

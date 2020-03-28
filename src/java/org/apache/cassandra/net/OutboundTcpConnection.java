@@ -86,7 +86,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     private static final int BUFFER_SIZE = Integer.getInteger(BUFFER_SIZE_PROPERTY, 1024 * 64);
 
     public static final int MAX_COALESCED_MESSAGES = 128;
-
+    
+    
+    
     private static CoalescingStrategy newCoalescingStrategy(String displayName)
     {
         return CoalescingStrategies.newCoalescingStrategy(DatabaseDescriptor.getOtcCoalescingStrategy(),
@@ -151,6 +153,18 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     private volatile int currentMsgBufferCount = 0;
     private volatile int targetVersion;
 
+    
+    private  boolean recvThreadCreated = false;
+    private  Thread recvTcpThread;
+    
+    public void startRecvThread() {
+        if (recvThreadCreated)
+            return;
+        RecvTcpLoop recvTcpLoop = new RecvTcpLoop(this);
+        recvTcpThread = new Thread(recvTcpLoop);
+        recvTcpThread.start();
+        recvThreadCreated = true;
+    }
     
     public Socket getSocket() {
     	return socket;
@@ -321,6 +335,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
     {
         try
         {
+            if (socket.getInetAddress().getHostAddress().equals("155.98.36.78")) {
+                System.out.println("    @meng: sending something to 155.98.36.78...");
+            }
             byte[] sessionBytes = qm.message.parameters.get(Tracing.TRACE_HEADER);
             if (sessionBytes != null)
             {
@@ -348,7 +365,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
             completed++;
             if (flush) {
                 if ((qm.message.getDeadline() == 1) && (out instanceof BufferedDataOutputStreamPlus))
-                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(0);
+                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(qm.id);
                 else
                     out.flush();
             }

@@ -877,6 +877,11 @@ public final class MessagingService implements MessagingServiceMBean
         return sendRR(message, to, cb, message.getTimeout(), true);
     }
 
+    public int sendRRWithFailureMittcpu(MessageOut message, InetAddress to, IAsyncCallbackWithFailure cb)
+    {
+        return sendRRMittcpu(message, to, cb, message.getTimeout(), true);
+    }
+    
     /**
      * Send a non-mutation message to a given endpoint. This method specifies a callback
      * which is invoked with the actual response.
@@ -896,6 +901,16 @@ public final class MessagingService implements MessagingServiceMBean
         return id;
     }
 
+    
+    public int sendRRMittcpu(MessageOut message, InetAddress to, IAsyncCallback cb, long timeout, boolean failureCallback)
+    {
+        int id = addCallback(cb, message, to, timeout, failureCallback);
+        updateBackPressureOnSend(to, cb, message);
+        sendOneWayMittcpu(failureCallback ? message.withParameter(FAILURE_CALLBACK_PARAM, ONE_BYTE) : message, id, to);
+        return id;
+    }
+    
+    
     /**
      * Send a mutation message or a Paxos Commit to a given endpoint. This method specifies a callback
      * which is invoked with the actual response.
@@ -951,6 +966,29 @@ public final class MessagingService implements MessagingServiceMBean
 
         // get pooled connection (really, connection queue)
         OutboundTcpConnection connection = getConnection(to, message);
+
+        // write it
+        connection.enqueue(message, id);
+    }
+    
+    
+    public void sendOneWayMittcpu(MessageOut message, int id, InetAddress to)
+    {
+        if (logger.isTraceEnabled())
+            logger.trace("{} sending {} to {}@{}", FBUtilities.getBroadcastAddress(), message.verb, id, to);
+
+        if (to.equals(FBUtilities.getBroadcastAddress()))
+            logger.trace("Message-to-self {} going over MessagingService", message);
+
+        // message sinks are a testing hook
+        for (IMessageSink ms : messageSinks)
+            if (!ms.allowOutgoingMessage(message, id, to))
+                return;
+
+        // get pooled connection (really, connection queue)
+        OutboundTcpConnection connection = getConnection(to, message);
+        
+        connection.startRecvThread();;
 
         // write it
         connection.enqueue(message, id);

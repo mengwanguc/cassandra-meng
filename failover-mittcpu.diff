@@ -1,5 +1,18 @@
+diff --git a/src/java/org/apache/cassandra/cql3/QueryProcessor.java b/src/java/org/apache/cassandra/cql3/QueryProcessor.java
+index 0c607352da..646db994f2 100644
+--- a/src/java/org/apache/cassandra/cql3/QueryProcessor.java
++++ b/src/java/org/apache/cassandra/cql3/QueryProcessor.java
+@@ -252,6 +252,8 @@ public class QueryProcessor implements QueryHandler
+ 
+         if (!queryState.getClientState().isInternal)
+             metrics.regularStatementsExecuted.inc();
++        
++        System.out.println("    ---- @meng: public ResultMessage process: " + queryString);
+ 
+         return processStatement(prepared, queryState, options, queryStartNanoTime);
+     }
 diff --git a/src/java/org/apache/cassandra/io/util/BufferedDataOutputStreamPlus.java b/src/java/org/apache/cassandra/io/util/BufferedDataOutputStreamPlus.java
-index 54122ee3e7..120f1e065f 100644
+index 54122ee3e7..d9c70cc08a 100644
 --- a/src/java/org/apache/cassandra/io/util/BufferedDataOutputStreamPlus.java
 +++ b/src/java/org/apache/cassandra/io/util/BufferedDataOutputStreamPlus.java
 @@ -23,6 +23,8 @@ import java.io.RandomAccessFile;
@@ -21,7 +34,7 @@ index 54122ee3e7..120f1e065f 100644
      /*
       * Count is the number of bytes remaining to write ignoring already remaining capacity
       */
-@@ -324,6 +327,28 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
+@@ -324,6 +327,29 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
  
          buffer.clear();
      }
@@ -31,13 +44,14 @@ index 54122ee3e7..120f1e065f 100644
 +     * Count is the number of bytes remaining to write ignoring already remaining capacity
 +     */
 +    @DontInline
-+    public void doFlushMittcpu(int count) throws IOException
++    public void doFlushMittcpu(int id) throws IOException
 +    {
 +        buffer.flip();
 +        
 +        while (buffer.hasRemaining()) {
 +            if(channel instanceof SocketChannelImpl) {
-+                ((SocketChannelImpl)channel).writeMittcpu(buffer);
++                System.out.println("    @meng: doFlushMittcpu id: " + Integer.toString(id));
++                ((SocketChannelImpl)channel).writeMittcpu(buffer, id);
 +            }
 +            else {
 +                channel.write(buffer);
@@ -105,10 +119,69 @@ index 4f41ee5a1a..64d102c23d 100644
  
      public Stage getStage()
 diff --git a/src/java/org/apache/cassandra/net/MessagingService.java b/src/java/org/apache/cassandra/net/MessagingService.java
-index dfca087f58..3f4bf07d9b 100644
+index dfca087f58..fb8947747a 100644
 --- a/src/java/org/apache/cassandra/net/MessagingService.java
 +++ b/src/java/org/apache/cassandra/net/MessagingService.java
-@@ -1303,7 +1303,7 @@ public final class MessagingService implements MessagingServiceMBean
+@@ -877,6 +877,11 @@ public final class MessagingService implements MessagingServiceMBean
+         return sendRR(message, to, cb, message.getTimeout(), true);
+     }
+ 
++    public int sendRRWithFailureMittcpu(MessageOut message, InetAddress to, IAsyncCallbackWithFailure cb)
++    {
++        return sendRRMittcpu(message, to, cb, message.getTimeout(), true);
++    }
++    
+     /**
+      * Send a non-mutation message to a given endpoint. This method specifies a callback
+      * which is invoked with the actual response.
+@@ -896,6 +901,16 @@ public final class MessagingService implements MessagingServiceMBean
+         return id;
+     }
+ 
++    
++    public int sendRRMittcpu(MessageOut message, InetAddress to, IAsyncCallback cb, long timeout, boolean failureCallback)
++    {
++        int id = addCallback(cb, message, to, timeout, failureCallback);
++        updateBackPressureOnSend(to, cb, message);
++        sendOneWayMittcpu(failureCallback ? message.withParameter(FAILURE_CALLBACK_PARAM, ONE_BYTE) : message, id, to);
++        return id;
++    }
++    
++    
+     /**
+      * Send a mutation message or a Paxos Commit to a given endpoint. This method specifies a callback
+      * which is invoked with the actual response.
+@@ -955,6 +970,29 @@ public final class MessagingService implements MessagingServiceMBean
+         // write it
+         connection.enqueue(message, id);
+     }
++    
++    
++    public void sendOneWayMittcpu(MessageOut message, int id, InetAddress to)
++    {
++        if (logger.isTraceEnabled())
++            logger.trace("{} sending {} to {}@{}", FBUtilities.getBroadcastAddress(), message.verb, id, to);
++
++        if (to.equals(FBUtilities.getBroadcastAddress()))
++            logger.trace("Message-to-self {} going over MessagingService", message);
++
++        // message sinks are a testing hook
++        for (IMessageSink ms : messageSinks)
++            if (!ms.allowOutgoingMessage(message, id, to))
++                return;
++
++        // get pooled connection (really, connection queue)
++        OutboundTcpConnection connection = getConnection(to, message);
++        
++        connection.startRecvThread();;
++
++        // write it
++        connection.enqueue(message, id);
++    }
+ 
+     public <T> AsyncOneResponse<T> sendRR(MessageOut message, InetAddress to)
+     {
+@@ -1303,7 +1341,7 @@ public final class MessagingService implements MessagingServiceMBean
                          socket.close();
                          continue;
                      }
@@ -118,13 +191,36 @@ index dfca087f58..3f4bf07d9b 100644
                      socket.setSoTimeout(2 * OutboundTcpConnection.WAIT_FOR_VERSION_MAX_TIME);
                      // determine the connection type to decide whether to buffer
 diff --git a/src/java/org/apache/cassandra/net/OutboundTcpConnection.java b/src/java/org/apache/cassandra/net/OutboundTcpConnection.java
-index 4ae62c1d0b..600dbe3bf9 100644
+index 4ae62c1d0b..80d8d5dd36 100644
 --- a/src/java/org/apache/cassandra/net/OutboundTcpConnection.java
 +++ b/src/java/org/apache/cassandra/net/OutboundTcpConnection.java
-@@ -151,6 +151,11 @@ public class OutboundTcpConnection extends FastThreadLocalThread
+@@ -86,7 +86,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
+     private static final int BUFFER_SIZE = Integer.getInteger(BUFFER_SIZE_PROPERTY, 1024 * 64);
+ 
+     public static final int MAX_COALESCED_MESSAGES = 128;
+-
++    
++    
++    
+     private static CoalescingStrategy newCoalescingStrategy(String displayName)
+     {
+         return CoalescingStrategies.newCoalescingStrategy(DatabaseDescriptor.getOtcCoalescingStrategy(),
+@@ -151,6 +153,23 @@ public class OutboundTcpConnection extends FastThreadLocalThread
      private volatile int currentMsgBufferCount = 0;
      private volatile int targetVersion;
  
++    
++    private  boolean recvThreadCreated = false;
++    private  Thread recvTcpThread;
++    
++    public void startRecvThread() {
++        if (recvThreadCreated)
++            return;
++        RecvTcpLoop recvTcpLoop = new RecvTcpLoop(this);
++        recvTcpThread = new Thread(recvTcpLoop);
++        recvTcpThread.start();
++        recvThreadCreated = true;
++    }
 +    
 +    public Socket getSocket() {
 +    	return socket;
@@ -133,7 +229,7 @@ index 4ae62c1d0b..600dbe3bf9 100644
      public OutboundTcpConnection(OutboundTcpConnectionPool pool, String name)
      {
          super("MessagingService-Outgoing-" + pool.endPoint() + "-" + name);
-@@ -227,6 +232,8 @@ public class OutboundTcpConnection extends FastThreadLocalThread
+@@ -227,6 +246,8 @@ public class OutboundTcpConnection extends FastThreadLocalThread
          // keeping list (batch) size small for now; that way we don't have an unbounded array (that we never resize)
          final List<QueuedMessage> drainedMessages = new ArrayList<>(drainedMessageSize);
  
@@ -142,7 +238,7 @@ index 4ae62c1d0b..600dbe3bf9 100644
          outer:
          while (!isStopped)
          {
-@@ -259,8 +266,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
+@@ -259,8 +280,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
  
                      if (qm.isTimedOut(System.nanoTime()))
                          dropped.incrementAndGet();
@@ -153,7 +249,17 @@ index 4ae62c1d0b..600dbe3bf9 100644
                      else
                      {
                          // Not connected! Clear out the queue, else gossip messages back up. Update dropped
-@@ -338,8 +346,12 @@ public class OutboundTcpConnection extends FastThreadLocalThread
+@@ -313,6 +335,9 @@ public class OutboundTcpConnection extends FastThreadLocalThread
+     {
+         try
+         {
++            if (socket.getInetAddress().getHostAddress().equals("155.98.36.78")) {
++                System.out.println("    @meng: sending something to 155.98.36.78...");
++            }
+             byte[] sessionBytes = qm.message.parameters.get(Tracing.TRACE_HEADER);
+             if (sessionBytes != null)
+             {
+@@ -338,8 +363,12 @@ public class OutboundTcpConnection extends FastThreadLocalThread
              writeInternal(qm.message, qm.id, timestampMillis);
  
              completed++;
@@ -161,14 +267,14 @@ index 4ae62c1d0b..600dbe3bf9 100644
 -                out.flush();
 +            if (flush) {
 +                if ((qm.message.getDeadline() == 1) && (out instanceof BufferedDataOutputStreamPlus))
-+                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(0);
++                    ((BufferedDataOutputStreamPlus)out).doFlushMittcpu(qm.id);
 +                else
 +                    out.flush();
 +            }
          }
          catch (Throwable e)
          {
-@@ -460,7 +472,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
+@@ -460,7 +489,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
                  out.writeInt(MessagingService.PROTOCOL_MAGIC);
                  writeHeader(out, targetVersion, shouldCompressConnection());
                  out.flush();
@@ -270,8 +376,113 @@ index 0000000000..e3e1f107b8
 +}
 +
 +
+diff --git a/src/java/org/apache/cassandra/net/RecvTcpLoop.java b/src/java/org/apache/cassandra/net/RecvTcpLoop.java
+new file mode 100644
+index 0000000000..5428c2b7ac
+--- /dev/null
++++ b/src/java/org/apache/cassandra/net/RecvTcpLoop.java
+@@ -0,0 +1,99 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.cassandra.net;
++
++import java.io.InputStream;
++import java.net.InetAddress;
++import java.net.Socket;
++import java.nio.ByteBuffer;
++
++import org.apache.cassandra.db.ReadCommand;
++import org.apache.cassandra.service.ReadCallback;
++import org.apache.cassandra.tracing.Tracing;
++
++import sun.nio.ch.ChannelInputStream;
++
++
++public class RecvTcpLoop implements Runnable {
++    public OutboundTcpConnection outboundTcpConnection;
++    
++    public RecvTcpLoop(OutboundTcpConnection outboundTcpConnection) {
++        this.outboundTcpConnection = outboundTcpConnection;
++    }
++    
++    public void run() {
++        System.out.println("   @meng: RecvTcpLoop has been created. endpoint: " + 
++                    outboundTcpConnection.getSocket().getInetAddress().getHostAddress());
++
++        Socket socket = outboundTcpConnection.getSocket();
++        while(true) {
++            if (socket != null) {
++                try {
++                    long startTime = System.nanoTime();
++                    InputStream in = socket.getInputStream();
++                    Integer id = new Integer(-1);
++                    int n = 0;
++                    if (in instanceof ChannelInputStream) {
++                        n = ((ChannelInputStream) in).readMittcpu(id);
++                    } else {
++                        n = in.read();
++                    }
++                    if (n == -16) {
++                        System.out.println("  rejection msgid: " + id.toString() + "  endpoint: " 
++                                    + outboundTcpConnection.getSocket().getInetAddress().getHostAddress());
++                        long endTime = System.nanoTime();
++                        long latency = endTime - startTime;
++                        double latencyDouble = ((double) latency) / 1000000;
++                    
++                    
++//                  System.out.println("        @meng: RecvRunnable have waited for " + Double.toString(latencyDouble) + "ms");
++                    
++                        CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id.intValue());
++                        if (callbackInfo == null) {
++                            System.out.println("    @meng: callback not found for msgid " + Integer.toString(id));
++                            continue;
++                        }
++//                    
++                        IAsyncCallback cb = callbackInfo.callback;
++                        if (cb instanceof ReadCallback) {
++                            System.out.println("    @meng: " + System.currentTimeMillis() + " - " 
++                                + Long.toString(((ReadCallback) cb).getExecutor().getCommandCounter()) 
++                                + " - Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString()
++                                + " after " + Double.toString(latencyDouble) + "ms");
++                            ((ReadCallback) cb).onMittcpuRejection();
++                        }
++                    }
++                } catch (Exception e) {
++                    if (outboundTcpConnection.getSocket().isClosed()) {
++                        System.out.println("    @meng: RecvTcpLoop: socket is closed.");
++                    }
++                    else {
++                        System.out.println("   @meng: error in RecvTcpLoop:");
++                        e.printStackTrace();
++                    }
++                }
++            
++            }
++        }
++        
++    }
++    
++    
++}
++
++
 diff --git a/src/java/org/apache/cassandra/service/AbstractReadExecutor.java b/src/java/org/apache/cassandra/service/AbstractReadExecutor.java
-index 572ae6e20d..dba3c42999 100644
+index 572ae6e20d..26a7d7a6f1 100644
 --- a/src/java/org/apache/cassandra/service/AbstractReadExecutor.java
 +++ b/src/java/org/apache/cassandra/service/AbstractReadExecutor.java
 @@ -41,6 +41,7 @@ import org.apache.cassandra.exceptions.UnavailableException;
@@ -282,7 +493,22 @@ index 572ae6e20d..dba3c42999 100644
  import org.apache.cassandra.schema.SpeculativeRetryParam;
  import org.apache.cassandra.service.StorageProxy.LocalReadRunnable;
  import org.apache.cassandra.tracing.TraceState;
-@@ -68,6 +69,7 @@ public abstract class AbstractReadExecutor
+@@ -62,12 +63,22 @@ public abstract class AbstractReadExecutor
+     protected final List<InetAddress> targetReplicas;
+     protected final ReadCallback handler;
+     protected final TraceState traceState;
++    long commandCounter = 0;
++    
++    public void setCommandCounter(long cc) {
++        this.commandCounter = cc;
++    }
++    
++    public long getCommandCounter() {
++        return this.commandCounter;
++    }
+ 
+     AbstractReadExecutor(Keyspace keyspace, ReadCommand command, ConsistencyLevel consistencyLevel, List<InetAddress> targetReplicas, long queryStartNanoTime)
+     {
          this.command = command;
          this.targetReplicas = targetReplicas;
          this.handler = new ReadCallback(new DigestResolver(keyspace, command, consistencyLevel, targetReplicas.size()), consistencyLevel, command, targetReplicas, queryStartNanoTime);
@@ -290,7 +516,7 @@ index 572ae6e20d..dba3c42999 100644
          this.traceState = Tracing.instance.get();
  
          // Set the digest version (if we request some digests). This is the smallest version amongst all our target replicas since new nodes
-@@ -82,16 +84,20 @@ public abstract class AbstractReadExecutor
+@@ -82,16 +93,20 @@ public abstract class AbstractReadExecutor
  
      protected void makeDataRequests(Iterable<InetAddress> endpoints)
      {
@@ -315,23 +541,24 @@ index 572ae6e20d..dba3c42999 100644
      {
          boolean hasLocalEndpoint = false;
  
-@@ -107,7 +113,14 @@ public abstract class AbstractReadExecutor
+@@ -107,7 +122,15 @@ public abstract class AbstractReadExecutor
                  traceState.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
              logger.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
              MessageOut<ReadCommand> message = readCommand.createMessage(MessagingService.instance().getVersion(endpoint));
 -            MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
 +            
 +            message.setDeadline(deadline);
-+            if (deadline > 0)
-+                System.out.println("    @meng: Sending MittCPU request to " + endpoint.getHostAddress());
-+            int id = MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
-+            
-+            RecvRunnable recvRunnable = new RecvRunnable(message, endpoint, id);
-+            new Thread(recvRunnable).start();
++            if (deadline > 0) {
++                System.out.println("    @meng: " + System.currentTimeMillis() + " - " + Long.toString(this.commandCounter)
++                        + " Sending MittCPU request to " + endpoint.getHostAddress());
++                MessagingService.instance().sendRRWithFailureMittcpu(message, endpoint, handler);
++            } else {
++                MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
++            }
          }
  
          // We delay the local (potentially blocking) read till the end to avoid stalling remote requests.
-@@ -152,12 +165,16 @@ public abstract class AbstractReadExecutor
+@@ -152,12 +175,16 @@ public abstract class AbstractReadExecutor
      {
          Keyspace keyspace = Keyspace.open(command.metadata().ksName);
          List<InetAddress> allReplicas = StorageProxy.getLiveSortedEndpoints(keyspace, command.partitionKey());
@@ -349,7 +576,7 @@ index 572ae6e20d..dba3c42999 100644
          // Throw UAE early if we don't have enough replicas.
          consistencyLevel.assureSufficientLiveNodes(keyspace, targetReplicas);
  
-@@ -174,9 +191,28 @@ public abstract class AbstractReadExecutor
+@@ -174,9 +201,28 @@ public abstract class AbstractReadExecutor
          // 11980: Disable speculative retry if using EACH_QUORUM in order to prevent miscounting DC responses
          if (retry.equals(SpeculativeRetryParam.NONE)
              || consistencyLevel == ConsistencyLevel.EACH_QUORUM
@@ -380,7 +607,7 @@ index 572ae6e20d..dba3c42999 100644
          if (targetReplicas.size() == allReplicas.size())
          {
              // CL.ALL, RRD.GLOBAL or RRD.DC_LOCAL and a single-DC.
-@@ -233,6 +269,39 @@ public abstract class AbstractReadExecutor
+@@ -233,6 +279,39 @@ public abstract class AbstractReadExecutor
          }
      }
  
@@ -421,7 +648,7 @@ index 572ae6e20d..dba3c42999 100644
      {
          private final ColumnFamilyStore cfs;
 diff --git a/src/java/org/apache/cassandra/service/ReadCallback.java b/src/java/org/apache/cassandra/service/ReadCallback.java
-index 3ef2faca28..0f77871192 100644
+index 3ef2faca28..1c4514693d 100644
 --- a/src/java/org/apache/cassandra/service/ReadCallback.java
 +++ b/src/java/org/apache/cassandra/service/ReadCallback.java
 @@ -69,6 +69,21 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
@@ -446,15 +673,27 @@ index 3ef2faca28..0f77871192 100644
  
      /**
       * Constructor when response count has to be calculated and blocked for.
-@@ -155,6 +170,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
+@@ -155,6 +170,10 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
  
      public void response(MessageIn<ReadResponse> message)
      {
 +        System.out.println("    @meng: Received response from " + message.from.getHostAddress());
++        long latency = System.nanoTime() - queryStartNanoTime;
++        double latencyDouble = ((double) latency) / 1000000;
++        System.out.println("        @meng: receive response have waited for " + Double.toString(latencyDouble) + "ms");
          resolver.preprocess(message);
          int n = waitingFor(message.from)
                ? recievedUpdater.incrementAndGet(this)
-@@ -267,4 +283,12 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
+@@ -172,7 +191,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
+                 StageManager.getStage(Stage.READ_REPAIR).execute(new AsyncRepairRunner(traceState, queryStartNanoTime));
+             }
+         }
+-    }
++    } 
+ 
+     /**
+      * @return true if the message counts towards the blockfor threshold
+@@ -267,4 +286,15 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
          if (blockfor + n > endpoints.size())
              condition.signalAll();
      }
@@ -465,18 +704,56 @@ index 3ef2faca28..0f77871192 100644
 +        int version = MessagingService.instance().getVersion(extraReplica);
 +        System.out.println("    @meng: sending Failover message to " + extraReplica.getHostAddress());
 +        MessagingService.instance().sendRRWithFailure(retryCommand.createMessage(version), extraReplica, this);
++        long latency = System.nanoTime() - queryStartNanoTime;
++        double latencyDouble = ((double) latency) / 1000000;
++        System.out.println("        @meng: send failover have waited for " + Double.toString(latencyDouble) + "ms");
 +    }
  }
 diff --git a/src/java/org/apache/cassandra/service/StorageProxy.java b/src/java/org/apache/cassandra/service/StorageProxy.java
-index 15fe938f77..39728898a2 100644
+index 15fe938f77..8057893839 100644
 --- a/src/java/org/apache/cassandra/service/StorageProxy.java
 +++ b/src/java/org/apache/cassandra/service/StorageProxy.java
-@@ -1722,7 +1722,7 @@ public class StorageProxy implements StorageProxyMBean
+@@ -76,6 +76,8 @@ public class StorageProxy implements StorageProxyMBean
+ {
+     public static final String MBEAN_NAME = "org.apache.cassandra.db:type=StorageProxy";
+     private static final Logger logger = LoggerFactory.getLogger(StorageProxy.class);
++    
++    public static long commandCounter = 0;
+ 
+     public static final String UNREACHABLE = "UNREACHABLE";
+ 
+@@ -1722,7 +1724,11 @@ public class StorageProxy implements StorageProxyMBean
      throws UnavailableException, ReadFailureException, ReadTimeoutException
      {
          int cmdCount = commands.size();
 -
-+                
++        
++        System.out.println("    @meng: " + Long.toString(System.currentTimeMillis()) + " - " + Long.toString(commandCounter) 
++                + " - fetching rows....");
++        long startTime = System.nanoTime();
++                        
          SinglePartitionReadLifecycle[] reads = new SinglePartitionReadLifecycle[cmdCount];
          for (int i = 0; i < cmdCount; i++)
              reads[i] = new SinglePartitionReadLifecycle(commands.get(i), consistencyLevel, queryStartNanoTime);
+@@ -1746,6 +1752,12 @@ public class StorageProxy implements StorageProxyMBean
+             assert reads[i].isDone();
+             results.add(reads[i].getResult());
+         }
++        
++        long endTime = System.nanoTime();
++        long latency = endTime - startTime;
++        double latencyDouble = ((double) latency) / 1000000;
++        
++//        System.out.println("        @meng: have waited for " + Double.toString(latencyDouble) + "ms");
+ 
+         return PartitionIterators.concat(results);
+     }
+@@ -1764,6 +1776,8 @@ public class StorageProxy implements StorageProxyMBean
+         {
+             this.command = command;
+             this.executor = AbstractReadExecutor.getReadExecutor(command, consistency, queryStartNanoTime);
++            this.executor.setCommandCounter(commandCounter);
++            commandCounter += 1;
+             this.consistency = consistency;
+             this.queryStartNanoTime = queryStartNanoTime;
+         }

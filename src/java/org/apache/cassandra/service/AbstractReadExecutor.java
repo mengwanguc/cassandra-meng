@@ -203,7 +203,8 @@ public abstract class AbstractReadExecutor
             || consistencyLevel == ConsistencyLevel.EACH_QUORUM
             || consistencyLevel.blockFor(keyspace) == allReplicas.size()) {
             if (targetReplicas.size() == allReplicas.size()) {
-                System.out.println("    @meng: NeverSpeculatingReadExecutor...");
+                System.out.println("    @meng: NeverSpeculatingReadExecutor...  targetReplicas.size(): " 
+                        + String.valueOf(targetReplicas.size()) + " allReplicas.size() " + String.valueOf(allReplicas.size()));
                 return new NeverSpeculatingReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
             }
             InetAddress extraReplica = allReplicas.get(targetReplicas.size());

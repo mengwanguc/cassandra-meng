@@ -203,7 +203,6 @@ public abstract class AbstractReadExecutor
             || consistencyLevel == ConsistencyLevel.EACH_QUORUM
             || consistencyLevel.blockFor(keyspace) == allReplicas.size()) {
             if (targetReplicas.size() == allReplicas.size()) {
-                System.out.println("    @meng: NeverSpeculatingReadExecutor...");
                 return new NeverSpeculatingReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
             }
             InetAddress extraReplica = allReplicas.get(targetReplicas.size());
@@ -219,7 +218,6 @@ public abstract class AbstractReadExecutor
                 }
             }
             targetReplicas.add(extraReplica);
-            System.out.println("    @meng: MittcpuReadExecutor...");
             return new MittcpuReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
 
         }
@@ -230,7 +228,6 @@ public abstract class AbstractReadExecutor
             // CL.ALL, RRD.GLOBAL or RRD.DC_LOCAL and a single-DC.
             // We are going to contact every node anyway, so ask for 2 full data requests instead of 1, for redundancy
             // (same amount of requests in total, but we turn 1 digest request into a full blown data request).
-            System.out.println("    @meng: AlwaysSpeculatingReadExecutor...");
             return new AlwaysSpeculatingReadExecutor(keyspace, cfs, command, consistencyLevel, targetReplicas, queryStartNanoTime);
         }
 
@@ -251,8 +248,6 @@ public abstract class AbstractReadExecutor
         }
         targetReplicas.add(extraReplica);
 
-        System.out.println("    @meng: AlwaysSpeculatingReadExecutor or SpeculatingReadExecutor...");
-        
         if (retry.equals(SpeculativeRetryParam.ALWAYS))
             return new AlwaysSpeculatingReadExecutor(keyspace, cfs, command, consistencyLevel, targetReplicas, queryStartNanoTime);
         else // PERCENTILE or CUSTOM.

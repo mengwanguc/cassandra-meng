@@ -482,18 +482,10 @@ index 0000000000..5428c2b7ac
 +
 +
 diff --git a/src/java/org/apache/cassandra/service/AbstractReadExecutor.java b/src/java/org/apache/cassandra/service/AbstractReadExecutor.java
-index 572ae6e20d..26a7d7a6f1 100644
+index 572ae6e20d..957e7f2a9d 100644
 --- a/src/java/org/apache/cassandra/service/AbstractReadExecutor.java
 +++ b/src/java/org/apache/cassandra/service/AbstractReadExecutor.java
-@@ -41,6 +41,7 @@ import org.apache.cassandra.exceptions.UnavailableException;
- import org.apache.cassandra.metrics.ReadRepairMetrics;
- import org.apache.cassandra.net.MessageOut;
- import org.apache.cassandra.net.MessagingService;
-+import org.apache.cassandra.net.RecvRunnable;
- import org.apache.cassandra.schema.SpeculativeRetryParam;
- import org.apache.cassandra.service.StorageProxy.LocalReadRunnable;
- import org.apache.cassandra.tracing.TraceState;
-@@ -62,12 +63,22 @@ public abstract class AbstractReadExecutor
+@@ -62,12 +62,22 @@ public abstract class AbstractReadExecutor
      protected final List<InetAddress> targetReplicas;
      protected final ReadCallback handler;
      protected final TraceState traceState;
@@ -516,7 +508,7 @@ index 572ae6e20d..26a7d7a6f1 100644
          this.traceState = Tracing.instance.get();
  
          // Set the digest version (if we request some digests). This is the smallest version amongst all our target replicas since new nodes
-@@ -82,16 +93,20 @@ public abstract class AbstractReadExecutor
+@@ -82,16 +92,20 @@ public abstract class AbstractReadExecutor
  
      protected void makeDataRequests(Iterable<InetAddress> endpoints)
      {
@@ -541,7 +533,7 @@ index 572ae6e20d..26a7d7a6f1 100644
      {
          boolean hasLocalEndpoint = false;
  
-@@ -107,7 +122,15 @@ public abstract class AbstractReadExecutor
+@@ -107,7 +121,15 @@ public abstract class AbstractReadExecutor
                  traceState.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
              logger.trace("reading {} from {}", readCommand.isDigestQuery() ? "digest" : "data", endpoint);
              MessageOut<ReadCommand> message = readCommand.createMessage(MessagingService.instance().getVersion(endpoint));
@@ -558,7 +550,7 @@ index 572ae6e20d..26a7d7a6f1 100644
          }
  
          // We delay the local (potentially blocking) read till the end to avoid stalling remote requests.
-@@ -152,12 +175,16 @@ public abstract class AbstractReadExecutor
+@@ -152,12 +174,16 @@ public abstract class AbstractReadExecutor
      {
          Keyspace keyspace = Keyspace.open(command.metadata().ksName);
          List<InetAddress> allReplicas = StorageProxy.getLiveSortedEndpoints(keyspace, command.partitionKey());
@@ -576,7 +568,7 @@ index 572ae6e20d..26a7d7a6f1 100644
          // Throw UAE early if we don't have enough replicas.
          consistencyLevel.assureSufficientLiveNodes(keyspace, targetReplicas);
  
-@@ -174,9 +201,28 @@ public abstract class AbstractReadExecutor
+@@ -174,14 +200,37 @@ public abstract class AbstractReadExecutor
          // 11980: Disable speculative retry if using EACH_QUORUM in order to prevent miscounting DC responses
          if (retry.equals(SpeculativeRetryParam.NONE)
              || consistencyLevel == ConsistencyLevel.EACH_QUORUM
@@ -584,6 +576,8 @@ index 572ae6e20d..26a7d7a6f1 100644
 -            return new NeverSpeculatingReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
 +            || consistencyLevel.blockFor(keyspace) == allReplicas.size()) {
 +            if (targetReplicas.size() == allReplicas.size()) {
++                System.out.println("    @meng: NeverSpeculatingReadExecutor...  targetReplicas.size(): " 
++                        + String.valueOf(targetReplicas.size()) + " allReplicas.size() " + String.valueOf(allReplicas.size()));
 +                return new NeverSpeculatingReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
 +            }
 +            InetAddress extraReplica = allReplicas.get(targetReplicas.size());
@@ -599,6 +593,7 @@ index 572ae6e20d..26a7d7a6f1 100644
 +                }
 +            }
 +            targetReplicas.add(extraReplica);
++            System.out.println("    @meng: MittcpuReadExecutor...");
 +            return new MittcpuReadExecutor(keyspace, command, consistencyLevel, targetReplicas, queryStartNanoTime);
  
 +        }
@@ -607,7 +602,22 @@ index 572ae6e20d..26a7d7a6f1 100644
          if (targetReplicas.size() == allReplicas.size())
          {
              // CL.ALL, RRD.GLOBAL or RRD.DC_LOCAL and a single-DC.
-@@ -233,6 +279,39 @@ public abstract class AbstractReadExecutor
+             // We are going to contact every node anyway, so ask for 2 full data requests instead of 1, for redundancy
+             // (same amount of requests in total, but we turn 1 digest request into a full blown data request).
++            System.out.println("    @meng: AlwaysSpeculatingReadExecutor...");
+             return new AlwaysSpeculatingReadExecutor(keyspace, cfs, command, consistencyLevel, targetReplicas, queryStartNanoTime);
+         }
+ 
+@@ -202,6 +251,8 @@ public abstract class AbstractReadExecutor
+         }
+         targetReplicas.add(extraReplica);
+ 
++        System.out.println("    @meng: AlwaysSpeculatingReadExecutor or SpeculatingReadExecutor...");
++        
+         if (retry.equals(SpeculativeRetryParam.ALWAYS))
+             return new AlwaysSpeculatingReadExecutor(keyspace, cfs, command, consistencyLevel, targetReplicas, queryStartNanoTime);
+         else // PERCENTILE or CUSTOM.
+@@ -233,6 +284,39 @@ public abstract class AbstractReadExecutor
          }
      }
  

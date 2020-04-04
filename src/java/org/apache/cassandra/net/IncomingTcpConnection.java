@@ -198,6 +198,11 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
             // callback expired; nothing to do
             return null;
         }
+        
+        if (message.from.getHostAddress().equals("155.98.36.111")) {
+            System.out.println("    @meng: thread id: " + Thread.currentThread() + 
+                    "receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());
+        }
         if (version <= MessagingService.current_version)
         {
             MessagingService.instance().receive(message, id);

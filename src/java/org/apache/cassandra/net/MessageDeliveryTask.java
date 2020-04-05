@@ -46,10 +46,10 @@ public class MessageDeliveryTask implements Runnable
     public void run()
     {
         if (message.from.getHostAddress().equals("155.98.36.111") && !message.toString().contains("GOSSIP")) {
-            System.out.println("    @meng: thread name: " + Thread.currentThread() + " thread id: " + Thread.currentThread.getId() + 
+            System.out.println("    @meng: thread name: " + Thread.currentThread() + " thread id: " + Thread.currentThread().getId() + 
                     " time:" + System.currentTimeMillis() + 
                     "receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());
-        }
+        }c
         
         MessagingService.Verb verb = message.verb;
         long timeTaken = message.getLifetimeInMS();

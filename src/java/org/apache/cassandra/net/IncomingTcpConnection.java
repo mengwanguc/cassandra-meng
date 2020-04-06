@@ -199,11 +199,11 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
             return null;
         }
         
-//        if (message.from.getHostAddress().equals("155.98.36.111") && !message.toString().contains("GOSSIP")) {
-//            System.out.println("    @meng: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
-//                    " time:" + System.currentTimeMillis() + 
-//                    "receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());
-//        }
+        if (message.from.getHostAddress().equals("155.98.36.111") && !message.toString().contains("GOSSIP")) {
+            System.out.println("    @meng: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
+                    " time:" + System.currentTimeMillis() + 
+                    " receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());
+        }
         if (version <= MessagingService.current_version)
         {
             MessagingService.instance().receive(message, id);

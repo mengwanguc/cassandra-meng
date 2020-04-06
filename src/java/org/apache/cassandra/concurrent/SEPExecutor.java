@@ -83,6 +83,9 @@ public class SEPExecutor extends AbstractLocalAwareExecutorService
     {
         // we add to the queue first, so that when a worker takes a task permit it can be certain there is a task available
         // this permits us to schedule threads non-spuriously; it also means work is serviced fairly
+        if (this.name.contains("ReadStage")) {
+            System.out.println("    @meng: addTask in ReadStage...");
+        }
         tasks.add(task);
         int taskPermits;
         while (true)

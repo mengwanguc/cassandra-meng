@@ -311,7 +311,7 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     private void writeConnected(QueuedMessage qm, boolean flush)
     {
-        if (qm.message.from.getHostAddress().equals("155.98.36.111") && !qm.message.toString().contains("GOSSIP")) {
+        if (socket.getInetAddress().equals("155.98.36.111") && !qm.message.toString().contains("GOSSIP")) {
             System.out.println("    @meng writeConnected: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
                     " time:" + System.currentTimeMillis() + 
                     "  message: " + qm.message.toString());

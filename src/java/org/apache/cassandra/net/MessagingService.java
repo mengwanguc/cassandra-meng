@@ -941,7 +941,7 @@ public final class MessagingService implements MessagingServiceMBean
         if (to.getHostAddress().equals("155.98.36.111") && Thread.currentThread().getName().contains("ReadStage")) {
             System.out.println("    @meng sendOneway: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
                     " time:" + System.currentTimeMillis() + 
-                    "  message: " + message.toString());
+                    "  message: " + message.toString() + "  " + message.payload.toString());
         }
         
         if (logger.isTraceEnabled())

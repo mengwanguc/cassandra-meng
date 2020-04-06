@@ -311,8 +311,14 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     private void writeConnected(QueuedMessage qm, boolean flush)
     {
+        if (qm.message.from.getHostAddress().equals("155.98.36.111") && !qm.message.toString().contains("GOSSIP")) {
+            System.out.println("    @meng writeConnected: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
+                    " time:" + System.currentTimeMillis() + 
+                    "  message: " + qm.message.toString());
+        }
         try
         {
+            
             byte[] sessionBytes = qm.message.parameters.get(Tracing.TRACE_HEADER);
             if (sessionBytes != null)
             {

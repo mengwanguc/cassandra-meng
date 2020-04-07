@@ -31,6 +31,9 @@ public class ResponseVerbHandler implements IVerbHandler
     public void doVerb(MessageIn message, int id)
     {
         long latency = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - MessagingService.instance().getRegisteredCallbackAge(id));
+
+	System.out.println("	@meng: received response after " + String.valueOf(latency) + 
+		"ns	id: " + String.valueOf(id));
         CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
         if (callbackInfo == null)
         {

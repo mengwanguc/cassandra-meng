@@ -197,6 +197,10 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         {
             if (exec.takeWorkPermit(true))
             {
+                if (exec.name.contains("ReadStage")) {
+                    System.out.println("    @meng SEPWorker selfAssign ReadStage: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
+                            " time:" + System.currentTimeMillis());
+                }
                 Work work = new Work(exec);
                 // we successfully started work on this executor, so we must either assign it to ourselves or ...
                 if (assign(work, true))

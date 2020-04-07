@@ -18,6 +18,7 @@
 package org.apache.cassandra.net;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.EnumSet;
 
 import org.slf4j.Logger;
@@ -46,7 +47,8 @@ public class MessageDeliveryTask implements Runnable
     public void run()
     {
         if (message.from.getHostAddress().equals("155.98.36.111") && !message.toString().contains("GOSSIP")) {
-            System.out.println("    @meng: thread name: " + Thread.currentThread() + " thread id: " + Thread.currentThread().getId() + 
+            System.out.println("    @meng: thread name: " + Thread.currentThread().getName() + 
+                    " pid: " + ManagementFactory.getRuntimeMXBean().getName().split("@")[0] + 
                     " time:" + System.currentTimeMillis() + 
                     " receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());
         }

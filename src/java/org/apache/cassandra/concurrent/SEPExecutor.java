@@ -86,7 +86,7 @@ public class SEPExecutor extends AbstractLocalAwareExecutorService
         if (this.name.contains("ReadStage")) {
             System.out.println("    @meng readStage addtask: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
                     " time:" + System.currentTimeMillis() + 
-                    " task: " + task.toString());
+                    " task: " + task.getClass().getName());
         }
         tasks.add(task);
         int taskPermits;

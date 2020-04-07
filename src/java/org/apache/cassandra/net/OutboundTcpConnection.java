@@ -333,6 +333,12 @@ public class OutboundTcpConnection extends FastThreadLocalThread
 
     private void writeConnected(QueuedMessage qm, boolean flush)
     {
+        if (socket.getInetAddress().getHostAddress().contains("155.98.36.35") && !qm.message.toString().contains("GOSSIP")) {
+            System.out.println("    @meng writeConnected: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
+                    " time:" + System.currentTimeMillis() + 
+                    " id:" + String.valueOf(qm.id) + " message: " + qm.message.toString());
+        }
+
         try
         {
             if (socket.getInetAddress().getHostAddress().equals("155.98.36.78")) {

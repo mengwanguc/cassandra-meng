@@ -33,7 +33,13 @@ public class ResponseVerbHandler implements IVerbHandler
         long latency = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - MessagingService.instance().getRegisteredCallbackAge(id));
 
 	System.out.println("	@meng: received response after " + String.valueOf(latency) + 
-		"ns	id: " + String.valueOf(id));
+		"ms	id: " + String.valueOf(id));
+        if (message.from.getHostAddress().equals("155.98.36.35") && !message.toString().contains("GOSSIP")) {
+            System.out.println("    @meng: doVerb thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
+                    " time:" + System.currentTimeMillis() + 
+                    " request id: " + String.valueOf(id) + "  message: " + message.toString());
+        }
+
         CallbackInfo callbackInfo = MessagingService.instance().removeRegisteredCallback(id);
         if (callbackInfo == null)
         {

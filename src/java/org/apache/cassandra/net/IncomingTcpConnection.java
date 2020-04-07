@@ -200,7 +200,7 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
         }
         
         if (message.from.getHostAddress().equals("155.98.36.111") && !message.toString().contains("GOSSIP")) {
-            System.out.print("----");
+            System.out.println("----");
             System.out.println("    @meng: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
                     " time:" + System.currentTimeMillis() + 
                     " receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());

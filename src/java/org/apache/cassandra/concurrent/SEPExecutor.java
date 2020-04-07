@@ -102,6 +102,9 @@ public class SEPExecutor extends AbstractLocalAwareExecutorService
 
         if (taskPermits == 0)
         {
+            if (this.name.contains("ReadStage")) {
+                System.out.println("    @meng readStage addtask: pool.maybeStartSpinningWorker();");
+            }
             // we only need to schedule a thread if there are no tasks already waiting to be processed, as
             // the original enqueue will have started a thread to service its work which will have itself
             // spawned helper workers that would have either exhausted the available tasks or are still being spawned.
@@ -111,6 +114,9 @@ public class SEPExecutor extends AbstractLocalAwareExecutorService
         }
         else if (taskPermits >= maxTasksQueued)
         {
+            if (this.name.contains("ReadStage")) {
+                System.out.println("    @meng readStage addtask: taskPermits >= maxTasksQueued");
+            }
             // register to receive a signal once a task is processed bringing the queue below its threshold
             WaitQueue.Signal s = hasRoom.register();
 
@@ -121,9 +127,18 @@ public class SEPExecutor extends AbstractLocalAwareExecutorService
             if (taskPermits(permits.get()) > maxTasksQueued)
             {
                 // if we're blocking, we might as well directly schedule a worker if we aren't already at max
-                if (takeWorkPermit(true))
+                if (takeWorkPermit(true)) {
+                    if (this.name.contains("ReadStage")) {
+                        System.out.println("    @meng readStage addtask: pool.schedule(new Work(this));");
+                    }
                     pool.schedule(new Work(this));
-
+                }
+                    
+                if (this.name.contains("ReadStage")) {
+                    System.out.println("    @meng readStage addtask: s.awaitUninterruptibly();");
+                }
+                
+                
                 metrics.totalBlocked.inc();
                 metrics.currentBlocked.inc();
                 s.awaitUninterruptibly();

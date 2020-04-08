@@ -48,7 +48,7 @@ public class MessageDeliveryTask implements Runnable
     {
         if (message.from.getHostAddress().equals("155.98.36.111") && !message.toString().contains("GOSSIP")) {
             System.out.println("    @meng: thread name: " + Thread.currentThread().getName() + 
-                    " pid: " + ManagementFactory.getRuntimeMXBean().getName().split("@")[0] + 
+                    " pid: " + String.valueOf(System.getTid()) + 
                     " time:" + System.currentTimeMillis() + 
                     " receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());
         }

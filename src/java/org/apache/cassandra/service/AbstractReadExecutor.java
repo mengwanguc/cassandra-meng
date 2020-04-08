@@ -183,6 +183,21 @@ public abstract class AbstractReadExecutor
         
         List<InetAddress> targetReplicas = consistencyLevel.filterForQuery(keyspace, allReplicas, repairDecision);
         
+        if (targetReplicas.size() == 1 && allReplicas.size() == 2) {
+            for (InetAddress address : allReplicas)
+            {
+                if (address.getHostAddress().equals("155.98.36.35"))
+                {
+                    if (!targetReplicas.contains(address)) {
+                        targetReplicas.clear();
+                        targetReplicas.add(address);
+                    }
+                    break;
+                }
+            }
+            
+        }
+        
         
         // Throw UAE early if we don't have enough replicas.
         consistencyLevel.assureSufficientLiveNodes(keyspace, targetReplicas);

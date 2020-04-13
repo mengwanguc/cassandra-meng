@@ -12,12 +12,12 @@ echo "# cass-1: $ip" >> token-range.txt
 echo "arr1 = " >> token-range.txt
 cqlsh $ip  -f query.cql | grep "{"  >> token-range.txt
 
-ip=$(dig +short `dig +short b.cass-5n.ucare.emulab.net | awk '{ print ; exit }' ` | awk '{ print; exit }' )
+ip=$(dig +short `dig +short b.cass-5n-2.ucare.emulab.net | awk '{ print ; exit }' ` | awk '{ print; exit }' )
 echo "# cass-2: $ip" >> token-range.txt
 echo "arr2 = " >> token-range.txt
 cqlsh $ip  -f query.cql | grep "{"  >> token-range.txt
 
-ip=$(dig +short `dig +short c.cass-5n.ucare.emulab.net | awk '{ print ; exit }' ` | awk '{ print; exit }' )
+ip=$(dig +short `dig +short c.cass-5n-2.ucare.emulab.net | awk '{ print ; exit }' ` | awk '{ print; exit }' )
 echo "# cass-3: $ip" >> token-range.txt
 echo "arr3 = " >> token-range.txt
 cqlsh $ip  -f query.cql | grep "{"  >> token-range.txt

@@ -4,7 +4,7 @@ import time
 import sys
 from cassandra.cluster import Cluster
 
-cluster = Cluster(['c.cass-5n.ucare.emulab.net'])
+cluster = Cluster(['c.cass-5n-2.ucare.emulab.net'])
 
 session = cluster.connect('mittcpu')
 
@@ -16,9 +16,10 @@ df = pd.read_csv(file_name, index_col=0)
 row = df.index.values
 
 times = []
-for i in range(0,5000):
+for i in range(0,1000):
 	start = time.time()
-	command = "select * from students where id = " + str(row[i]);
+#	command = "select * from students where id = " + str(row[i]);
+	command = "select * from students where id = 5";
 	rows = session.execute(command)
 	end = time.time()
 	if i >= 100:

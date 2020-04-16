@@ -2233,6 +2233,7 @@ public class StorageProxy implements StorageProxyMBean
                     System.out.println("    @meng: rangeCommand message to " + endpoint.getHostAddress());
                     MessageOut<ReadCommand> message = rangeCommand.createMessage(MessagingService.instance().getVersion(endpoint));
                     Tracing.trace("Enqueuing request to {}", endpoint);
+                    message.setDeadline(1);
                     MessagingService.instance().sendRRWithFailureMittcpu(message, endpoint, handler);
                 }
             }

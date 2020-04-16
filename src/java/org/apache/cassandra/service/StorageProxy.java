@@ -2052,19 +2052,6 @@ public class StorageProxy implements StorageProxyMBean
                     break;
 
                 List<InetAddress> filteredMerged = consistency.filterForQuery(keyspace, merged);
-                
-                if (filteredMerged.size() == 1 && merged.size() == 2) {
-                    for (InetAddress endpoint: merged) {
-                        if (endpoint.getHostAddress().contains("155.98.36.35")) {
-                            if (!filteredMerged.contains(endpoint)) {
-                                filteredMerged.clear();
-                                filteredMerged.add(endpoint);
-                            }
-                            break;
-                        }
-                    }
-                }
-                
 
                 // Estimate whether merging will be a win or not
                 if (!DatabaseDescriptor.getEndpointSnitch().isWorthMergingForRangeQuery(filteredMerged, current.filteredEndpoints, next.filteredEndpoints))
@@ -2243,6 +2230,21 @@ public class StorageProxy implements StorageProxyMBean
             {
                 System.out.println("    @meng: range query by endpoint. all:" + String.valueOf(toQuery.liveEndpoints.size())
                         + "  filtered: " + String.valueOf(toQuery.filteredEndpoints.size()));
+                
+                
+                if (toQuery.filteredEndpoints.size() == 1 && toQuery.liveEndpoints.size() == 2) {
+                    for (InetAddress endpoint: toQuery.liveEndpoints) {
+                        if (endpoint.getHostAddress().contains("155.98.36.35")) {
+                            System.out.println("    @meng: rangeCommand message to " + endpoint.getHostAddress());
+                            MessageOut<ReadCommand> message = rangeCommand.createMessage(MessagingService.instance().getVersion(endpoint));
+                            Tracing.trace("Enqueuing request to {}", endpoint);
+                            message.setDeadline(1);
+                            MessagingService.instance().sendRRWithFailureMittcpu(message, endpoint, handler);
+                            return new SingleRangeResponse(handler);
+                        }
+                    }
+                }
+                
                 for (InetAddress endpoint : toQuery.filteredEndpoints)
                 {
                     System.out.println("    @meng: rangeCommand message to " + endpoint.getHostAddress());

@@ -2260,7 +2260,7 @@ public class StorageProxy implements StorageProxyMBean
             List<PartitionIterator> concurrentQueries = new ArrayList<>(concurrencyFactor);
             for (int i = 0; i < concurrencyFactor && ranges.hasNext(); i++)
             {
-                concurrentQueries.add(query(nextRange, i == 0));
+                concurrentQueries.add(query(ranges.next(), i == 0));
                 ++rangesQueried;
             }
 

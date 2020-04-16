@@ -2217,15 +2217,20 @@ public class StorageProxy implements StorageProxyMBean
             ReadCallback handler = new ReadCallback(resolver, consistency, rangeCommand, minimalEndpoints, queryStartNanoTime);
 
             handler.assureSufficientLiveNodes();
+            
+            Thread.currentThread().dumpStack();
 
             if (toQuery.filteredEndpoints.size() == 1 && canDoLocalRequest(toQuery.filteredEndpoints.get(0)))
             {
+                System.out.println("    @meng: range query: StageManager.getStage");
                 StageManager.getStage(Stage.READ).execute(new LocalReadRunnable(rangeCommand, handler));
             }
             else
             {
+                System.out.println("    @meng: range query: for (InetAddress endpoint : toQuery.filteredEndpoints)");
                 for (InetAddress endpoint : toQuery.filteredEndpoints)
                 {
+                    System.out.println("    @meng: rangeCommand message to " + endpoint.getHostAddress());
                     MessageOut<ReadCommand> message = rangeCommand.createMessage(MessagingService.instance().getVersion(endpoint));
                     Tracing.trace("Enqueuing request to {}", endpoint);
                     MessagingService.instance().sendRRWithFailure(message, endpoint, handler);
@@ -2272,6 +2277,8 @@ public class StorageProxy implements StorageProxyMBean
     {
         Tracing.trace("Computing ranges to query");
 
+        
+        System.out.println("    @meng: getRangeSlide....");
         Keyspace keyspace = Keyspace.open(command.metadata().ksName);
         RangeIterator ranges = new RangeIterator(command, keyspace, consistencyLevel);
 

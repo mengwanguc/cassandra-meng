@@ -2052,6 +2052,19 @@ public class StorageProxy implements StorageProxyMBean
                     break;
 
                 List<InetAddress> filteredMerged = consistency.filterForQuery(keyspace, merged);
+                
+                if (filteredMerged.size() == 1 && merged.size() == 2) {
+                    for (InetAddress endpoint: merged) {
+                        if (endpoint.getHostAddress().contains("155.98.36.35")) {
+                            if (!filteredMerged.contains(endpoint)) {
+                                filteredMerged.clear();
+                                filteredMerged.add(endpoint);
+                            }
+                            break;
+                        }
+                    }
+                }
+                
 
                 // Estimate whether merging will be a win or not
                 if (!DatabaseDescriptor.getEndpointSnitch().isWorthMergingForRangeQuery(filteredMerged, current.filteredEndpoints, next.filteredEndpoints))
@@ -2247,9 +2260,6 @@ public class StorageProxy implements StorageProxyMBean
             List<PartitionIterator> concurrentQueries = new ArrayList<>(concurrencyFactor);
             for (int i = 0; i < concurrencyFactor && ranges.hasNext(); i++)
             {
-                RangeForQuery nextRange = ranges.next();
-                System.out.println("    @meng: sendNextRequests() nextRange.liveEndpoints.size(): " + nextRange.liveEndpoints.size()
-                        + "  filteredEndpoints.size():" + nextRange.filteredEndpoints.size());
                 concurrentQueries.add(query(nextRange, i == 0));
                 ++rangesQueried;
             }

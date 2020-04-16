@@ -343,6 +343,7 @@ public class BufferedDataOutputStreamPlus extends DataOutputStreamPlus
                 ((SocketChannelImpl)channel).writeMittcpu(buffer, id);
             }
             else {
+                System.out.println("    channel:" + channel.getClass().toString());
                 channel.write(buffer);
             }
         }

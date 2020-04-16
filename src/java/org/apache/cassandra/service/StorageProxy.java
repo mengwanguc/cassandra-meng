@@ -2140,6 +2140,9 @@ public class StorageProxy implements StorageProxyMBean
         {
             try
             {
+                RangeForQuery nextRange = ranges.next();
+                System.out.println("    @meng: RangeCommandIterator.computeNext() nextRange.liveEndpoints.size(): " + nextRange.liveEndpoints.size()
+                        + "  filteredEndpoints.size():" + nextRange.filteredEndpoints.size());
                 while (sentQueryIterator == null || !sentQueryIterator.hasNext())
                 {
                     // If we don't have more range to handle, we're done

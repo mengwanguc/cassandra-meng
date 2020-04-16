@@ -2241,7 +2241,8 @@ public class StorageProxy implements StorageProxyMBean
             }
             else
             {
-                System.out.println("    @meng: range query: for (InetAddress endpoint : toQuery.filteredEndpoints)");
+                System.out.println("    @meng: range query by endpoint. all:" + String.valueOf(toQuery.liveEndpoints.size())
+                        + "  filtered: " + String.valueOf(toQuery.filteredEndpoints.size()));
                 for (InetAddress endpoint : toQuery.filteredEndpoints)
                 {
                     System.out.println("    @meng: rangeCommand message to " + endpoint.getHostAddress());

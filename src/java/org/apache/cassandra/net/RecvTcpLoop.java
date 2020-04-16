@@ -74,7 +74,7 @@ public class RecvTcpLoop implements Runnable {
                         System.out.println("    if (cb instanceof ReadCallback)");
                         if (cb instanceof ReadCallback) {
                             System.out.println("    @meng: " + System.currentTimeMillis() + " - " 
-                                + Long.toString(((ReadCallback) cb).getExecutor().getCommandCounter()) 
+//                                + Long.toString(((ReadCallback) cb).getExecutor().getCommandCounter()) 
                                 + " - Request is Mittcpu Reject from " + socket.getRemoteSocketAddress().toString()
                                 + " after " + Double.toString(latencyDouble) + "ms");
                             ((ReadCallback) cb).onMittcpuRejection();

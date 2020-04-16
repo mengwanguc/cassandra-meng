@@ -337,7 +337,8 @@ public class OutboundTcpConnection extends FastThreadLocalThread
             System.out.println("    @meng writeConnected: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
                     " time:" + System.currentTimeMillis() + 
                     " id:" + String.valueOf(qm.id) + " message: " + qm.message.toString() +
-                    " out:" + out.getClass().toString());
+                    " out:" + out.getClass().toString() +
+                    " flush:" + String.valueOf(flush));
         }
 
         try

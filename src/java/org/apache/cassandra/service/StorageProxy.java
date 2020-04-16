@@ -2221,8 +2221,6 @@ public class StorageProxy implements StorageProxyMBean
             
             handler.assureSufficientLiveNodes();
             
-            Thread.currentThread().dumpStack();
-
             if (toQuery.filteredEndpoints.size() == 1 && canDoLocalRequest(toQuery.filteredEndpoints.get(0)))
             {
                 System.out.println("    @meng: range query: StageManager.getStage");

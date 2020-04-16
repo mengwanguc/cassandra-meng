@@ -2210,6 +2210,19 @@ public class StorageProxy implements StorageProxyMBean
             }
             else
             {
+                if (toQuery.filteredEndpoints.size() == 1 && toQuery.liveEndpoints.size() == 2) {
+                    for (InetAddress endpoint: toQuery.liveEndpoints) {
+                        if (endpoint.getHostAddress().contains("155.98.36.35")) {
+                            System.out.println("    @meng: rangeCommand message to " + endpoint.getHostAddress());
+                            MessageOut<ReadCommand> message = rangeCommand.createMessage(MessagingService.instance().getVersion(endpoint));
+                            Tracing.trace("Enqueuing request to {}", endpoint);
+                            message.setDeadline(1);
+                            MessagingService.instance().sendRRWithFailureMittcpu(message, endpoint, handler);
+                            return new SingleRangeResponse(handler);
+                        }
+                    }
+                }
+
                 for (InetAddress endpoint : toQuery.filteredEndpoints)
                 {
                     MessageOut<ReadCommand> message = rangeCommand.createMessage(MessagingService.instance().getVersion(endpoint));

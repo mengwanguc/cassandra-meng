@@ -2246,7 +2246,10 @@ public class StorageProxy implements StorageProxyMBean
             List<PartitionIterator> concurrentQueries = new ArrayList<>(concurrencyFactor);
             for (int i = 0; i < concurrencyFactor && ranges.hasNext(); i++)
             {
-                concurrentQueries.add(query(ranges.next(), i == 0));
+                RangeForQuery nextRange = ranges.next();
+                System.out.println("    @meng: sendNextRequests() nextRange.liveEndpoints.size(): " + nextRange.liveEndpoints.size()
+                        + "  filteredEndpoints.size():" + nextRange.filteredEndpoints.size());
+                concurrentQueries.add(query(nextRange, i == 0));
                 ++rangesQueried;
             }
 

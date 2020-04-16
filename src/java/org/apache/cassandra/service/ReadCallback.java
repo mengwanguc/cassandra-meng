@@ -43,6 +43,7 @@ import org.apache.cassandra.net.IAsyncCallbackWithFailure;
 import org.apache.cassandra.net.MessageIn;
 import org.apache.cassandra.net.MessageOut;
 import org.apache.cassandra.net.MessagingService;
+import org.apache.cassandra.service.StorageProxy.RangeForQuery;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.tracing.TraceState;
 import org.apache.cassandra.tracing.Tracing;
@@ -71,6 +72,9 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
     private final Keyspace keyspace; // TODO push this into ConsistencyLevel?
     
     
+    private boolean rangeRead = false;
+    private RangeForQuery toQuery = null;
+    
     private AbstractReadExecutor executor;
     
     public void setExecutor(AbstractReadExecutor executor)
@@ -83,6 +87,13 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
         return this.executor;
     }
     
+    public void setRangeRead(boolean isRange) {
+        this.rangeRead = isRange;
+    }
+    
+    public void setRangeForQuery(RangeForQuery toQuery) {
+        this.toQuery = toQuery;
+    }
     
 
     /**
@@ -287,7 +298,7 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
             condition.signalAll();
     }
     
-    public void onMittcpuRejection() {
+    public void onMittcpuRejectionSingleRead() {
         ReadCommand retryCommand = executor.command;
         InetAddress extraReplica = executor.targetReplicas.get(executor.targetReplicas.size() - 1);
         int version = MessagingService.instance().getVersion(extraReplica);
@@ -296,5 +307,17 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
         long latency = System.nanoTime() - queryStartNanoTime;
         double latencyDouble = ((double) latency) / 1000000;
         System.out.println("        @meng: send failover have waited for " + Double.toString(latencyDouble) + "ms");
+    }
+    
+    public void onMittcpuRejectionRangeRead() {
+        System.out.println("    @meng: mittcpu rejected. RangeForQuery:" + toQuery.toString());
+    }
+    
+    public void onMittcpuRejection() {
+        if (this.rangeRead) {
+            this.onMittcpuRejectionRangeRead();
+        } else {
+            this.onMittcpuRejectionSingleRead();
+        }
     }
 }

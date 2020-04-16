@@ -1959,7 +1959,7 @@ public class StorageProxy implements StorageProxyMBean
         return (maxExpectedResults / DatabaseDescriptor.getNumTokens()) / keyspace.getReplicationStrategy().getReplicationFactor();
     }
 
-    private static class RangeForQuery
+    public static class RangeForQuery
     {
         public final AbstractBounds<PartitionPosition> range;
         public final List<InetAddress> liveEndpoints;
@@ -2219,6 +2219,9 @@ public class StorageProxy implements StorageProxyMBean
             List<InetAddress> minimalEndpoints = toQuery.filteredEndpoints.subList(0, minResponses);
             ReadCallback handler = new ReadCallback(resolver, consistency, rangeCommand, minimalEndpoints, queryStartNanoTime);
 
+            handler.setRangeRead(true);
+            handler.setRangeForQuery(toQuery);
+            
             handler.assureSufficientLiveNodes();
             
             Thread.currentThread().dumpStack();

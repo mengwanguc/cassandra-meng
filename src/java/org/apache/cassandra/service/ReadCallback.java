@@ -44,7 +44,6 @@ import org.apache.cassandra.net.MessageIn;
 import org.apache.cassandra.net.MessageOut;
 import org.apache.cassandra.net.MessagingService;
 import org.apache.cassandra.service.StorageProxy.RangeForQuery;
-import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.tracing.TraceState;
 import org.apache.cassandra.tracing.Tracing;
 import org.apache.cassandra.utils.FBUtilities;
@@ -310,7 +309,19 @@ public class ReadCallback implements IAsyncCallbackWithFailure<ReadResponse>
     }
     
     public void onMittcpuRejectionRangeRead() {
-        System.out.println("    @meng: mittcpu rejected. RangeForQuery:" + toQuery.toString());
+        InetAddress extraReplica = null;
+        System.out.println("    @meng: mittcpu rejected. RangeForQuery:" + toQuery.range.toString());
+        for (InetAddress endpoint: toQuery.liveEndpoints) {
+            if (!toQuery.filteredEndpoints.contains(endpoint)) {
+                extraReplica = endpoint;
+            }
+        }
+        if (extraReplica != null) {
+            System.out.println("    @meng: sending Failover range message to " + extraReplica.getHostAddress());
+            MessageOut<ReadCommand> message = command.createMessage(MessagingService.instance().getVersion(extraReplica));
+            MessagingService.instance().sendRRWithFailure(message, extraReplica, this);
+        }
+        
     }
     
     public void onMittcpuRejection() {

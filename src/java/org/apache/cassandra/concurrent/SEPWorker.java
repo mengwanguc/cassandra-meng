@@ -158,6 +158,10 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
     boolean assign(Work work, boolean self)
     {
         Work state = get();
+        if (!work.assigned.name.contains("GOSSIP")) {
+            System.out.println("    assign work: " + work.assigned.name +
+                    " to thread " + System.getTid());
+        }
         while (state.canAssign(self))
         {
             if (!compareAndSet(state, work))

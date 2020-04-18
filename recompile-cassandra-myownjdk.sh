@@ -21,7 +21,7 @@ sed -i "89s/\<http:\/\/repo2\>/https:\/\/repo1/" build.xml
 
 cd $SOURCE_ROOT/
 cd jna
-ant
+#ant
 rm $SOURCE_ROOT/cassandra-meng/lib/jna-4.2.2.jar
 cp build/jna.jar $SOURCE_ROOT/cassandra-meng/lib/jna-4.2.2.jar
 

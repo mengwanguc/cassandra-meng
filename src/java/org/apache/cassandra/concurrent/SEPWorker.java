@@ -42,6 +42,9 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
     // strategy can only work when there are multiple threads spinning (as more sleep time must elapse than real time)
     long prevStopCheck = 0;
     long soleSpinnerSpinTime = 0;
+    
+    boolean addedToKernel = false;
+    int tid = 0;
 
     SEPWorker(Long workerId, Work initialState, SharedExecutorPool pool)
     {
@@ -69,6 +72,9 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
 
         SEPExecutor assigned = null;
         Runnable task = null;
+        
+        tid = System.getTid();
+        
         try
         {
             while (true)
@@ -158,10 +164,14 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
     boolean assign(Work work, boolean self)
     {
         Work state = get();
-        if (!work.assigned.name.contains("GOSSIP")) {
-            System.out.println("    assign work: " + work.assigned.name +
-                    " to thread " + System.getTid());
+
+        if (work.assigned != null && work.assigned.name.contains("READ")) {
+            if (this.addedToKernel == false) {
+                this.addedToKernel = true;
+                System.addCassWorker(this.tid);
+            }
         }
+        
         while (state.canAssign(self))
         {
             if (!compareAndSet(state, work))

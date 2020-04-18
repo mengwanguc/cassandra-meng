@@ -168,6 +168,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         if (work.assigned != null && work.assigned.name.contains("READ")) {
             if (this.addedToKernel == false) {
                 this.addedToKernel = true;
+                System.out.println("@meng: System.addCassWorker(Math.toIntExact(this.tid));");
                 System.addCassWorker(Math.toIntExact(this.tid));
             }
         }

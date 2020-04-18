@@ -44,7 +44,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
     long soleSpinnerSpinTime = 0;
     
     boolean addedToKernel = false;
-    int tid = 0;
+    long tid = 0;
 
     SEPWorker(Long workerId, Work initialState, SharedExecutorPool pool)
     {

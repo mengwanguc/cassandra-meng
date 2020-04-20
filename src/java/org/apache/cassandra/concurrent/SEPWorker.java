@@ -95,7 +95,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                 // we go to sleep)
                 if (stop()) {
                     System.out.println("@meng: Worker-" + workerId + " is stopped.");
-                    System.stopCassWorker(this.tid);
+                    System.stopCassWorker(Math.toIntExact(this.tid));
                     while (isStopped())
                         LockSupport.park();
                 }

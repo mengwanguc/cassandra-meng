@@ -93,10 +93,12 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                 // if stop was signalled, go to sleep (don't try self-assign; being put to sleep is rare, so let's obey it
                 // whenever we receive it - though we don't apply this constraint to producers, who may reschedule us before
                 // we go to sleep)
-                if (stop())
+                if (stop()) {
+                    System.out.println("@meng: Worker-" + workerId + " is stopped.");
                     while (isStopped())
                         LockSupport.park();
-
+                }
+                    
                 // we can be assigned any state from STOPPED, so loop if we don't actually have any tasks assigned
                 assigned = get().assigned;
                 if (assigned == null)
@@ -116,6 +118,12 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                     assigned.maybeSchedule();
 
                     // we know there is work waiting, as we have a work permit, so poll() will always succeed
+                    
+                    if (assigned.name.contains("Read")) {
+                        System.out.println("@meng: System.addCassWorker. Assigned new read work to Worker-" + workerId);
+                        System.addCassWorker(Math.toIntExact(this.tid));
+                    }
+                    
                     task.run();
                     task = null;
 
@@ -164,14 +172,6 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
     boolean assign(Work work, boolean self)
     {
         Work state = get();
-
-        if (work.assigned != null && work.assigned.name.contains("Read")) {
-            if (this.addedToKernel == false) {
-                this.addedToKernel = true;
-                System.out.println("@meng: System.addCassWorker(Math.toIntExact(this.tid));");
-                System.addCassWorker(Math.toIntExact(this.tid));
-            }
-        }
         
         while (state.canAssign(self))
         {

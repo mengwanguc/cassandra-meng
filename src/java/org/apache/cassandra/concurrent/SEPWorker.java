@@ -267,6 +267,9 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         Long target = start + sleep;
         if (pool.spinning.putIfAbsent(target, this) != null)
             return;
+        
+        System.out.println("@meng: Worker-" + workerId + " is now spinning for " + String.valueOf(sleep) + " ns.");
+        
         LockSupport.parkNanos(sleep);
 
         // remove ourselves (if haven't been already) - we should be at or near the front, so should be cheap-ish

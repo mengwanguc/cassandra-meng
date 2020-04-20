@@ -95,6 +95,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                 // we go to sleep)
                 if (stop()) {
                     System.out.println("@meng: Worker-" + workerId + " is stopped.");
+                    System.stopCassWorker(this.tid);
                     while (isStopped())
                         LockSupport.park();
                 }
@@ -120,7 +121,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                     // we know there is work waiting, as we have a work permit, so poll() will always succeed
                     
                     if (assigned.name.contains("Read")) {
-                        System.out.println("@meng: System.addCassWorker. Assigned new read work to Worker-" + workerId);
+                        System.out.println("@meng: System.addCassWorker. Assigned new read work to " + assigned.name + "-" + workerId);
                         System.addCassWorker(Math.toIntExact(this.tid));
                     }
                     

@@ -278,6 +278,8 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         // finish timing and grab spinningTime (before we finish timing so it is under rather than overestimated)
         long end = System.nanoTime();
         long spin = end - start;
+        
+        System.out.println("@meng: Worker-" + workerId + " actually spinned for " + String.valueOf(spin) + " ns.");
         long stopCheck = pool.stopCheck.addAndGet(spin);
         maybeStop(stopCheck, end);
         if (prevStopCheck + spin == stopCheck)

@@ -82,6 +82,7 @@ public class SharedExecutorPool
     public SharedExecutorPool(String poolName)
     {
         this.poolName = poolName;
+        System.initCassWorkers();
     }
 
     void schedule(Work work)

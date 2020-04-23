@@ -42,6 +42,9 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
     // strategy can only work when there are multiple threads spinning (as more sleep time must elapse than real time)
     long prevStopCheck = 0;
     long soleSpinnerSpinTime = 0;
+    
+    boolean addedToKernel = false;
+    long tid = 0;
 
     SEPWorker(Long workerId, Work initialState, SharedExecutorPool pool)
     {
@@ -69,6 +72,9 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
 
         SEPExecutor assigned = null;
         Runnable task = null;
+        
+        tid = System.getTid();
+        
         try
         {
             while (true)
@@ -87,10 +93,13 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                 // if stop was signalled, go to sleep (don't try self-assign; being put to sleep is rare, so let's obey it
                 // whenever we receive it - though we don't apply this constraint to producers, who may reschedule us before
                 // we go to sleep)
-                if (stop())
+                if (stop()) {
+                    System.out.println("@meng: Worker-" + workerId + " is stopped.");
+                    System.stopCassWorker(Math.toIntExact(this.tid));
                     while (isStopped())
                         LockSupport.park();
-
+                }
+                    
                 // we can be assigned any state from STOPPED, so loop if we don't actually have any tasks assigned
                 assigned = get().assigned;
                 if (assigned == null)
@@ -110,6 +119,12 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                     assigned.maybeSchedule();
 
                     // we know there is work waiting, as we have a work permit, so poll() will always succeed
+                    
+                    if (assigned.name.contains("Read")) {
+                        System.out.println("@meng: System.addCassWorker. Assigned new read work to " + assigned.name + "-" + workerId);
+                        System.addCassWorker(Math.toIntExact(this.tid));
+                    }
+                    
                     task.run();
                     task = null;
 
@@ -158,6 +173,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
     boolean assign(Work work, boolean self)
     {
         Work state = get();
+        
         while (state.canAssign(self))
         {
             if (!compareAndSet(state, work))
@@ -251,6 +267,9 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         Long target = start + sleep;
         if (pool.spinning.putIfAbsent(target, this) != null)
             return;
+        
+        System.out.println("@meng: Worker-" + workerId + " is now spinning for " + String.valueOf(sleep) + " ns.");
+        
         LockSupport.parkNanos(sleep);
 
         // remove ourselves (if haven't been already) - we should be at or near the front, so should be cheap-ish
@@ -259,6 +278,8 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         // finish timing and grab spinningTime (before we finish timing so it is under rather than overestimated)
         long end = System.nanoTime();
         long spin = end - start;
+        
+        System.out.println("@meng: Worker-" + workerId + " actually spinned for " + String.valueOf(spin) + " ns.");
         long stopCheck = pool.stopCheck.addAndGet(spin);
         maybeStop(stopCheck, end);
         if (prevStopCheck + spin == stopCheck)

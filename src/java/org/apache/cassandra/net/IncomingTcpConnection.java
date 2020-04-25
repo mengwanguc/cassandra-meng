@@ -198,6 +198,13 @@ public class IncomingTcpConnection extends FastThreadLocalThread implements Clos
             // callback expired; nothing to do
             return null;
         }
+        
+        if (!message.toString().contains("GOSSIP")) {
+            System.out.println("    @meng: thread name: " + Thread.currentThread().getName() + 
+                    " time:" + System.currentTimeMillis() + 
+                    " receiveMessage id: " + String.valueOf(id) + "  message: " + message.toString());
+        }
+        
         if (version <= MessagingService.current_version)
         {
             MessagingService.instance().receive(message, id);

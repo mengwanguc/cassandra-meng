@@ -1725,7 +1725,7 @@ public class StorageProxy implements StorageProxyMBean
 
         
         System.out.println("    @meng: fetching rows...");
-        Thread.currentThread().dumpStack();
+        
         
         SinglePartitionReadLifecycle[] reads = new SinglePartitionReadLifecycle[cmdCount];
         for (int i = 0; i < cmdCount; i++)

@@ -244,6 +244,9 @@ public class QueryProcessor implements QueryHandler
     public ResultMessage process(String queryString, QueryState queryState, QueryOptions options, long queryStartNanoTime)
     throws RequestExecutionException, RequestValidationException
     {
+        if (queryString.contains("SELECT name FROM mittcpu.students"))
+            System.out.println("    @meng: process query containing SELECT name FROM mittcpu.students...");
+        
         ParsedStatement.Prepared p = getStatement(queryString, queryState.getClientState());
         options.prepare(p.boundNames);
         CQLStatement prepared = p.statement;

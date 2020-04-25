@@ -246,7 +246,7 @@ public class QueryProcessor implements QueryHandler
     {
         if (queryString.contains("SELECT name FROM mittcpu.students")) {
             System.out.println("    @meng: process query containing SELECT name FROM mittcpu.students...");
-        throw new UnavailableException("exception from meng", ConsistencyLevel.ANY, 1, 0);
+        throw new UnavailableException("exception from meng", ConsistencyLevel.ONE, 1, 0);
         }
         
         ParsedStatement.Prepared p = getStatement(queryString, queryState.getClientState());

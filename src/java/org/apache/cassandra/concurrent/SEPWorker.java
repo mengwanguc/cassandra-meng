@@ -94,7 +94,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
                 // whenever we receive it - though we don't apply this constraint to producers, who may reschedule us before
                 // we go to sleep)
                 if (stop()) {
-                    System.out.println("@meng: Worker-" + workerId + " is stopped.");
+//                    System.out.println("@meng: Worker-" + workerId + " is stopped.");
                     System.stopCassWorker(Math.toIntExact(this.tid));
                     while (isStopped())
                         LockSupport.park();
@@ -268,7 +268,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         if (pool.spinning.putIfAbsent(target, this) != null)
             return;
         
-        System.out.println("@meng: Worker-" + workerId + " is now spinning for " + String.valueOf(sleep) + " ns.");
+//        System.out.println("@meng: Worker-" + workerId + " is now spinning for " + String.valueOf(sleep) + " ns.");
         
         LockSupport.parkNanos(sleep);
 
@@ -279,7 +279,7 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         long end = System.nanoTime();
         long spin = end - start;
         
-        System.out.println("@meng: Worker-" + workerId + " actually spinned for " + String.valueOf(spin) + " ns.");
+//        System.out.println("@meng: Worker-" + workerId + " actually spinned for " + String.valueOf(spin) + " ns.");
         long stopCheck = pool.stopCheck.addAndGet(spin);
         maybeStop(stopCheck, end);
         if (prevStopCheck + spin == stopCheck)

@@ -83,6 +83,11 @@ public class SEPExecutor extends AbstractLocalAwareExecutorService
     {
         // we add to the queue first, so that when a worker takes a task permit it can be certain there is a task available
         // this permits us to schedule threads non-spuriously; it also means work is serviced fairly
+        if (name.contains("Native-Transport")) {
+            System.out.println(name + " Executor addTask Thread name:" + Thread.currentThread().getName());
+            Thread.dumpStack();
+        }
+        
         tasks.add(task);
         int taskPermits;
         while (true)

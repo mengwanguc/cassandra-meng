@@ -120,6 +120,8 @@ public class NativeTransportService
      */
     public void start()
     {
+        System.out.println("NativeTransportService starting... Thread name:" + Thread.currentThread().getName());
+        Thread.dumpStack();
         initialize();
         servers.forEach(Server::start);
     }

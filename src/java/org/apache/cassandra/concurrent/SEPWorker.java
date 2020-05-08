@@ -120,8 +120,8 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
 
                     // we know there is work waiting, as we have a work permit, so poll() will always succeed
                     
-                    if (assigned.name.contains("Read")) {
-                        System.out.println("@meng: System.addCassWorker. Assigned new read work to " + assigned.name + "-" + workerId);
+                    if (assigned.name.contains("Read") || assigned.name.contains("Native")) {
+                     //   System.out.println("@meng: System.addCassWorker. Assigned new read work to " + assigned.name + "-" + workerId);
                         System.addCassWorker(Math.toIntExact(this.tid));
                     }
                     
@@ -213,10 +213,10 @@ final class SEPWorker extends AtomicReference<SEPWorker.Work> implements Runnabl
         {
             if (exec.takeWorkPermit(true))
             {
-                if (exec.name.contains("ReadStage")) {
-                    System.out.println("    @meng SEPWorker selfAssign ReadStage: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
-                            " time:" + System.currentTimeMillis() + " exec:" + exec.name);
-                }
+//                if (exec.name.contains("ReadStage")) {
+//                    System.out.println("    @meng SEPWorker selfAssign ReadStage: thread name: " + Thread.currentThread().getName() + " thread id: " + Thread.currentThread().getId() + 
+//                            " time:" + System.currentTimeMillis() + " exec:" + exec.name);
+//                }
                 Work work = new Work(exec);
                 // we successfully started work on this executor, so we must either assign it to ourselves or ...
                 if (assign(work, true))
